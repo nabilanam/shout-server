@@ -1,0 +1,5 @@
+{
+  "PORT": 5000,
+  "DATABASE_URI": "mongodb://127.0.0.1:27017/shout",
+  "JWT_SECRET": "DEV_SECRET"
+}
