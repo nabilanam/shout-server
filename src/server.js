@@ -1,5 +1,5 @@
-const db = require('./db')
 const config = require('config')
+const db = require('./database')
 const app = require('./app')
 
 db.connect()

@@ -8,6 +8,6 @@ app.get('/', (req, res) => {
 app.use(express.json())
 
 // routes
-app.use('/api/users', require('./routes/users'))
+app.use('/api/users', require('../routes/users'))
 
 module.exports = app
