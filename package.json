@@ -15,6 +15,9 @@
       "start": "clear"
     }
   },
+  "jest": {
+    "testEnvironment": "node"
+  },
   "dependencies": {
     "bcrypt": "^3.0.6",
     "config": "^3.1.0",
