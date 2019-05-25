@@ -9,10 +9,8 @@ router.post('/', middleware.create, (req, res) => {
 
   return controller
     .create(username, email, password)
-    .then(response => res.status(response.status).json({ data: response.data }))
-    .catch(response =>
-      res.status(response.status).json({ error: response.error })
-    )
+    .then(response => res.status(response.status).json(response))
+    .catch(response => res.status(response.status).json(response))
 })
 
 module.exports = router
