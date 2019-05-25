@@ -4,7 +4,7 @@ const app = require('./app')
 
 db.connect()
 
-const PORT = config.get('PORT')
+const PORT = config.get('port')
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`)
 })
