@@ -2,5 +2,17 @@
   "port": 5000,
   "database_uri": "mongodb://127.0.0.1:27017/shout",
   "jwt_secret": "top_secret",
-  "salt_rounds": 10
+  "salt_rounds": 10,
+  "validation": {
+    "user": {
+      "username": {
+        "min": 3,
+        "max": 16
+      },
+      "password": {
+        "min": 8,
+        "max": 32
+      }
+    }
+  }
 }
