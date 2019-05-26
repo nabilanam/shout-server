@@ -3,13 +3,16 @@ const config = require('config')
 
 const URI = config.get('database_uri')
 
-const connect = async () => {
-  try {
-    await mongoose.connect(URI, { useNewUrlParser: true, useCreateIndex: true })
-  } catch (error) {
-    console.log(error.message)
-    process.exit(1)
-  }
-}
+const connect_uri = uri =>
+  mongoose
+    .connect(uri, { useNewUrlParser: true, useCreateIndex: true })
+    .catch(error => {
+      console.error(error.message)
+      process.exit(1)
+    })
 
-module.exports = { connect }
+const connect = () => connect_uri(URI)
+
+const disconnect = () => mongoose.disconnect()
+
+module.exports = { connect, connect_uri, disconnect }
