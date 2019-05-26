@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon",
     "test": "jest || exit 0",
-    "testCov": "jest --coverage || true"
+    "test:cov": "jest --coverage || true",
+    "test:verb": "jest --verbose || true"
   },
   "keywords": [],
   "author": "nabilanam",
@@ -31,7 +32,6 @@
   "devDependencies": {
     "@types/jest": "^24.0.13",
     "jest": "^24.8.0",
-    "mockingoose": "^2.13.0",
     "mongodb-memory-server": "^5.1.2",
     "nodemon": "^1.19.0",
     "supertest": "^4.0.2"
