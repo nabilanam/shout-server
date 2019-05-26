@@ -1,6 +1,9 @@
 const memoryDB = require('../../database/memory')
-const controller = require('./index')
 const config = require('config')
+const bcrypt = require('bcrypt')
+
+const controller = require('./index')
+const ErrorResponse = require('../../response/ErrorResponse')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())
@@ -11,8 +14,9 @@ describe('User controller -> create', () => {
     email: 'abc@abc.com',
     password: 'abc'
   }
+  const mock_error_response = new ErrorResponse(400, 'Invalid request')
 
-  test('should return token (200) when no duplicate entry found', () =>
+  test('should resolve Response with (200, token) when (username, email, password)', () =>
     controller
       .create(person.username, person.email, person.password)
       .then(response => {
@@ -20,26 +24,77 @@ describe('User controller -> create', () => {
         expect(response.data.split('.').length).toBe(3)
       }))
 
-  test('should return (400) when username or email exists', () =>
+  test('should reject ErrorResponse with (400, "Username or email already exists") when (username) exists', () =>
     controller
-      .create(person.username, person.email, person.password)
-      .catch(err => expect(err.status).toBe(400)))
+      .create(person.username, person.email + 'x', person.password)
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Username or email already exists')
+      }))
 
-  test('should return (500) for when username undefined', () =>
+  test('should reject ErrorResponse with (400, "Username or email already exists") when (email) exists', () =>
+    controller
+      .create(person.username + 'x', person.email, person.password)
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Username or email already exists')
+      }))
+
+  test('should reject ErrorResponse with (400, "Invalid request") for when (email, password)', () =>
     controller
       .create(undefined, person.email, person.password)
-      .catch(err => expect(err.status).toBe(500)))
+      .catch(response => expect(response).toEqual(mock_error_response)))
 
-  test('should return (500) for when email undefined', () =>
+  test('should reject ErrorResponse with (400, "Invalid request") for when (username, password)', () =>
     controller
       .create(person.username, undefined, person.password)
-      .catch(err => expect(err.status).toBe(500)))
+      .catch(response => expect(response).toEqual(mock_error_response)))
 
-  test('should return (500) for when password undefined', () =>
+  test('should reject ErrorResponse with (400, "Invalid request") for when (username, email)', () =>
     controller
-      .create(person.username, person.email, undefined)
-      .catch(err => expect(err.status).toBe(500)))
+      .create(person.username, person.email)
+      .catch(response => expect(response).toEqual(mock_error_response)))
 
-  test('should return (500) for when no data provided', () =>
-    controller.create().catch(err => expect(err.status).toBe(500)))
+  test('should reject ErrorResponse with (400, "Invalid request") for when ()', () =>
+    controller
+      .create()
+      .catch(response => expect(response).toEqual(mock_error_response)))
+})
+
+describe('User controller -> login', () => {
+  const person = {
+    username: 'mno',
+    email: 'mno@mno.com',
+    password: 'mno'
+  }
+
+  const mock_error_response = new ErrorResponse(401, 'Wrong login credentials')
+
+  beforeAll(() =>
+    new User({
+      ...person,
+      password: bcrypt.hashSync(person.password, config.get('salt_rounds'))
+    }).save()
+  )
+
+  test('should resolve Response with (200, token) when (username, password)', () =>
+    controller.login(person.username, person.password).then(response => {
+      expect(response.status).toBe(200)
+      expect(response.data.split('.').length).toBe(3)
+    }))
+
+  test("should reject ErrorResponse with (401, 'Wrong login credentials') when (wrong username, password)", () =>
+    controller
+      .login(person.username + 'x', undefined, person.password)
+      .catch(response => expect(response).toEqual(mock_error_response)))
+
+  test("should reject ErrorResponse with (401, 'Wrong login credentials') when (username, wrong password)", () =>
+    controller
+      .login(person.username, undefined, person.password + 'x')
+      .catch(response => expect(response).toEqual(mock_error_response)))
+
+  test("should reject ErrorResponse with (401, 'Wrong login credentials') when ()", () =>
+    controller
+      .login()
+      .catch(response => expect(response).toEqual(mock_error_response)))
 })
