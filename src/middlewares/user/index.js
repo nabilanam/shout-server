@@ -9,39 +9,77 @@ const create = [
   check('username')
     .not()
     .isEmpty()
-    .withMessage('username is required')
+    .withMessage('Username is required')
     .isLength({
       min: username.min,
       max: username.max
     })
     .withMessage(
-      `username must be between ${username.min} to ${username.max} characters`
+      `Username must be between ${username.min} to ${username.max} characters`
     ),
+
   check('email')
     .isEmail()
-    .withMessage('valid email is required'),
+    .withMessage('Email is required'),
+
   check('password')
     .not()
     .isEmpty()
-    .withMessage('password is required')
+    .withMessage('Password is required')
     .isLength({
       min: password.min,
       max: password.max
     })
     .withMessage(
-      `password must be ${password.min} to ${password.max} characters long`
+      `Password must be ${password.min} to ${password.max} characters long`
     ),
+
   (req, res, next) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty())
       return res
         .status(http_status.BAD_REQUEST)
         .json(new ValidatorResponse(http_status.BAD_REQUEST, errors))
-    }
+    next()
+  }
+]
+
+const login = [
+  check('username')
+    .not()
+    .isEmpty()
+    .withMessage('Username is required')
+    .isLength({
+      min: username.min,
+      max: username.max
+    })
+    .withMessage(
+      `Username must be between ${username.min} to ${username.max} characters`
+    ),
+
+  check('password')
+    .not()
+    .isEmpty()
+    .withMessage('Password is required')
+    .isLength({
+      min: password.min,
+      max: password.max
+    })
+    .withMessage(
+      `Password must be ${password.min} to ${password.max} characters long`
+    ),
+
+  (req, res, next) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty())
+      return res
+        .status(http_status.BAD_REQUEST)
+        .json(new ValidatorResponse(http_status.BAD_REQUEST, errors))
     next()
   }
 ]
 
 module.exports = {
-  create
+  create,
+  login
 }
