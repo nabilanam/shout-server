@@ -5,7 +5,11 @@ const URI = config.get('database_uri')
 
 const connect_uri = uri =>
   mongoose
-    .connect(uri, { useNewUrlParser: true, useCreateIndex: true })
+    .connect(uri, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false
+    })
     .catch(error => {
       console.error(error.message)
       process.exit(1)
