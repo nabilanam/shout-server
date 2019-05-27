@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 
 const controller = require('./index')
 const ErrorResponse = require('../../response/ErrorResponse')
+const mail = require('../../mail')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())
@@ -16,13 +17,16 @@ describe('User controller -> create', () => {
   }
   const mock_error_response = new ErrorResponse(400, 'Invalid request')
 
-  test('should resolve Response with (200, token) when (username, email, password)', () =>
-    controller
+  test('should resolve Response with (200, "Check email address") when (username, email, password)', () => {
+    jest.spyOn(mail, 'send_mail').mockResolvedValue()
+
+    return controller
       .create(person.username, person.email, person.password)
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.split('.').length).toBe(3)
-      }))
+        expect(response.data).toBe('Check email address')
+      })
+  })
 
   test('should reject ErrorResponse with (400, "Username or email already exists") when (username) exists', () =>
     controller

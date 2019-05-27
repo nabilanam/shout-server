@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 
 const memoryDB = require('../../database/memory')
 const app = require('../../app')
+const mail = require('../../mail')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())
@@ -71,8 +72,10 @@ describe('POST /api/users', () => {
         expect(param).toBe('password')
       }))
 
-  test('should return {status: 200, data: token} when {username, password, email}', () =>
-    request(app)
+  test('should return {status: 200, data: "Check email address"} when {username, password, email}', () => {
+    jest.spyOn(mail, 'send_mail').mockResolvedValue()
+
+    return request(app)
       .post('/api/users')
       .send(person)
       .set('Accept', 'application/json')
@@ -81,8 +84,9 @@ describe('POST /api/users', () => {
       .then(res => {
         const { status, data } = res.body
         expect(status).toBe(200)
-        expect(data.split('.').length).toBe(3)
-      }))
+        expect(data).toBe('Check email address')
+      })
+  })
 })
 
 describe('POST /api/users/login', () => {

@@ -16,7 +16,8 @@ const create = (username, email, password) =>
         password: hash
       })
         .save()
-        .then(user => response.login_token(user.id))
+        .then(user => response.confirm_email(email, user.auth_key))
+        .catch(() => response.internal_server_error())
     )
     .catch(err => {
       if (err.message === User.status.DUPLICATE_KEY)
