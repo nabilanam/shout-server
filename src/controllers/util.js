@@ -1,4 +1,4 @@
-const mail = require('../../mail')
+const mail = require('../mail')
 const DOMAIN = require('config').get('domain')
 
 const send_authentication_mail = (to, auth_key) =>

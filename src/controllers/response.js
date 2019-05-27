@@ -1,6 +1,6 @@
 const jsonwebtoken = require('jsonwebtoken')
-const Response = require('../../response/Response')
-const ErrorResponse = require('../../response/ErrorResponse')
+const Response = require('../response/Response')
+const ErrorResponse = require('../response/ErrorResponse')
 const util = require('./util')
 
 const http_status = require('http-status-codes')

@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const config = require('config')
 
 const User = require('../../models/User')
-const response = require('./response')
+const response = require('../response')
 
 const SALT_ROUNDS = config.get('salt_rounds')
 
