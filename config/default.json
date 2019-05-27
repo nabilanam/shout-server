@@ -14,5 +14,11 @@
         "max": 32
       }
     }
+  },
+  "mail": {
+    "host": "smtp.ethereal.email",
+    "port": 587,
+    "username": "cullen.koelpin@ethereal.email",
+    "password": "kMQHsRFpDy6ZCKKtZp"
   }
 }
