@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon",
+    "prod": "export NODE_ENV=production&& nodemon",
     "test": "jest || exit 0",
     "test:cov": "jest --coverage || true",
     "test:verb": "jest --verbose || true"
