@@ -43,7 +43,7 @@ schema.post('save', function(error, doc, next) {
   }
 })
 
-schema.post('update', function(error, res, next) {
+schema.post('findOneAndUpdate', function(error, res, next) {
   if (error.name === 'MongoError' && error.code === 11000) {
     next(new Error(status.DUPLICATE_KEY))
   } else {
