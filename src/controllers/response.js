@@ -1,10 +1,8 @@
-const jsonwebtoken = require('jsonwebtoken')
 const Response = require('../response/Response')
 const ErrorResponse = require('../response/ErrorResponse')
 const util = require('./util')
 
 const http_status = require('http-status-codes')
-const JWT_SECRET = require('config').get('jwt_secret')
 
 const confirm_email = (to, auth_key) =>
   util
@@ -12,7 +10,7 @@ const confirm_email = (to, auth_key) =>
     .then(() => new Response(http_status.OK, 'Check email address'))
 
 const login_token = id => {
-  const token = jsonwebtoken.sign({ id }, JWT_SECRET, { expiresIn: '7d' })
+  const token = util.jwt_token(id, '30d')
   return new Response(http_status.OK, token)
 }
 

@@ -1,5 +1,13 @@
+const jsonwebtoken = require('jsonwebtoken')
+const config = require('config')
+
 const mail = require('../mail')
-const DOMAIN = require('config').get('domain')
+const DOMAIN = config.get('domain')
+const JWT_SECRET = config.get('jwt_secret')
+
+const jwt_token = (user_id, expiresIn) => {
+  return jsonwebtoken.sign({ id: user_id }, JWT_SECRET, { expiresIn })
+}
 
 const send_authentication_mail = (to, auth_key) =>
   mail.send_mail(
@@ -9,5 +17,6 @@ const send_authentication_mail = (to, auth_key) =>
   )
 
 module.exports = {
+  jwt_token,
   send_authentication_mail
 }
