@@ -15,7 +15,7 @@ describe('User controller -> create', () => {
     email: 'abc@abc.com',
     password: 'abc'
   }
-  const mock_error_response = new ErrorResponse(400, 'Invalid request')
+  const mock_error_response = new ErrorResponse(500, 'Internal server error')
 
   test('should resolve Response with (200, "Check email address") when (username, email, password)', () => {
     jest.spyOn(mail, 'send_mail').mockResolvedValue()
@@ -44,22 +44,22 @@ describe('User controller -> create', () => {
         expect(response.error).toBe('Username or email already exists')
       }))
 
-  test('should reject ErrorResponse with (400, "Invalid request") for when (email, password)', () =>
+  test('should reject ErrorResponse with (500, "Internal server error") for when (email, password)', () =>
     controller
       .create(undefined, person.email, person.password)
       .catch(response => expect(response).toEqual(mock_error_response)))
 
-  test('should reject ErrorResponse with (400, "Invalid request") for when (username, password)', () =>
+  test('should reject ErrorResponse with (500, "Internal server error") for when (username, password)', () =>
     controller
       .create(person.username, undefined, person.password)
       .catch(response => expect(response).toEqual(mock_error_response)))
 
-  test('should reject ErrorResponse with (400, "Invalid request") for when (username, email)', () =>
+  test('should reject ErrorResponse with (500, "Internal server error") for when (username, email)', () =>
     controller
       .create(person.username, person.email)
       .catch(response => expect(response).toEqual(mock_error_response)))
 
-  test('should reject ErrorResponse with (400, "Invalid request") for when ()', () =>
+  test('should reject ErrorResponse with (500, "Internal server error") for when ()', () =>
     controller
       .create()
       .catch(response => expect(response).toEqual(mock_error_response)))

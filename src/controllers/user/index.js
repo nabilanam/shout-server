@@ -17,12 +17,11 @@ const create = (username, email, password) =>
       })
         .save()
         .then(user => response.confirm_email(email, user.auth_key))
-        .catch(() => response.internal_server_error())
     )
     .catch(err => {
       if (err.message === User.status.DUPLICATE_KEY)
         throw response.duplicate_key_error()
-      throw response.bad_request()
+      throw response.internal_server_error()
     })
 
 const login = (username, password) =>
