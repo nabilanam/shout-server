@@ -1,5 +1,4 @@
 const config = require('config')
-const { Error } = require('mongoose')
 
 const memoryDB = require('../../database/memory')
 const Profile = require('./index')
@@ -22,8 +21,11 @@ describe('Profile model', () => {
       expect(profile.user).toBeDefined()
     }))
 
-  test('should reject mongoose.Error when {undefined user}', () =>
-    new Profile().save().catch(error => expect(error).toBeInstanceOf(Error)))
+  test('should reject Error with ("User doesn\'t exist") when {undefined user}', () =>
+    new Profile().save().catch(error => {
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toBe("User doesn't exist")
+    }))
 
   test('should reject MongoError when {duplicate user}', () =>
     new Profile({ user }).save().catch(error => expect(error).toBeDefined()))
