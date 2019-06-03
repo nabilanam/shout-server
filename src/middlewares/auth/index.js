@@ -10,23 +10,14 @@ const auth = async (req, res, next) => {
 
   try {
     const decoded = jsonwebtoken.verify(token, jwt_secret)
-    if (decoded) {
-      const user = await User.findById(decoded.id)
-      if (user) {
-        req.user = user
-        next()
-        return
-      }
-    }
+    const user = await User.findById(decoded.id)
+    req.user = user
+    next()
   } catch (err) {
-    return res
+    res
       .status(http_status.FORBIDDEN)
       .json(new ErrorResponse(http_status.FORBIDDEN, 'Access denied'))
   }
-
-  res
-    .status(http_status.FORBIDDEN)
-    .json(new ErrorResponse(http_status.FORBIDDEN, 'Access denied'))
 }
 
 module.exports = auth
