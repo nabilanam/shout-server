@@ -15,7 +15,6 @@ describe('User controller -> create', () => {
     email: 'abc@abc.com',
     password: 'abc'
   }
-  const mock_error_response = new ErrorResponse(500, 'Internal server error')
 
   test('should resolve Response with (200, "Check email address") when (username, email, password)', () => {
     jest.spyOn(mail, 'send_mail').mockResolvedValue()
@@ -26,43 +25,62 @@ describe('User controller -> create', () => {
         expect(response.status).toBe(200)
         expect(response.data).toBe('Check email address')
       })
+      .catch(error => expect(error).toBeUndefined())
   })
 
-  test('should reject ErrorResponse with (400, "Username or email already exists") when (username) exists', () =>
+  test('should reject ErrorResponse with (400, "Username or email already exists") when (duplicate username)', () =>
     controller
       .create(person.username, person.email + 'x', person.password)
+      .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
         expect(response.error).toBe('Username or email already exists')
       }))
 
-  test('should reject ErrorResponse with (400, "Username or email already exists") when (email) exists', () =>
+  test('should reject ErrorResponse with (400, "Username or email already exists") when (duplicate email)', () =>
     controller
       .create(person.username + 'x', person.email, person.password)
+      .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
         expect(response.error).toBe('Username or email already exists')
       }))
 
-  test('should reject ErrorResponse with (500, "Internal server error") for when (email, password)', () =>
-    controller
-      .create(undefined, person.email, person.password)
-      .catch(response => expect(response).toEqual(mock_error_response)))
-
-  test('should reject ErrorResponse with (500, "Internal server error") for when (username, password)', () =>
+  test('should reject ErrorResponse with (400, "Invalid request") for when (username, password)', () =>
     controller
       .create(person.username, undefined, person.password)
-      .catch(response => expect(response).toEqual(mock_error_response)))
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
 
-  test('should reject ErrorResponse with (500, "Internal server error") for when (username, email)', () =>
+  test('should reject ErrorResponse with (400, "Invalid request") for when (username, email)', () =>
     controller
       .create(person.username, person.email)
-      .catch(response => expect(response).toEqual(mock_error_response)))
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
 
-  test('should reject ErrorResponse with (500, "Internal server error") for when ()', () =>
+  test('should reject ErrorResponse with (400, "Invalid request") for when (email, password)', () =>
+    controller
+      .create(undefined, person.email, person.password)
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
+
+  test('should reject ErrorResponse with (400, "Invalid request") for when ()', () =>
     controller
       .create()
-      .catch(response => expect(response).toEqual(mock_error_response)))
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
 })
 
 describe('User controller -> login', () => {
@@ -72,8 +90,6 @@ describe('User controller -> login', () => {
     password: 'mno'
   }
 
-  const mock_error_response = new ErrorResponse(401, 'Wrong login credentials')
-
   beforeAll(() =>
     new User({
       ...person,
@@ -82,23 +98,38 @@ describe('User controller -> login', () => {
   )
 
   test('should resolve Response with (200, token) when (username, password)', () =>
-    controller.login(person.username, person.password).then(response => {
-      expect(response.status).toBe(200)
-      expect(response.data.split('.').length).toBe(3)
-    }))
+    controller
+      .login(person.username, person.password)
+      .then(response => {
+        expect(response.status).toBe(200)
+        expect(response.data.split('.').length).toBe(3)
+      })
+      .catch(response => expect(response).toBeUndefined()))
 
   test("should reject ErrorResponse with (401, 'Wrong login credentials') when (wrong username, password)", () =>
     controller
-      .login(person.username + 'x', undefined, person.password)
-      .catch(response => expect(response).toEqual(mock_error_response)))
+      .login(person.username + 'x', person.password)
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(401)
+        expect(response.error).toBe('Wrong login credentials')
+      }))
 
   test("should reject ErrorResponse with (401, 'Wrong login credentials') when (username, wrong password)", () =>
     controller
-      .login(person.username, undefined, person.password + 'x')
-      .catch(response => expect(response).toEqual(mock_error_response)))
+      .login(person.username, person.password + 'x')
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(401)
+        expect(response.error).toBe('Wrong login credentials')
+      }))
 
-  test("should reject ErrorResponse with (401, 'Wrong login credentials') when ()", () =>
+  test('should reject ErrorResponse with (400, "Invalid request") when ()', () =>
     controller
       .login()
-      .catch(response => expect(response).toEqual(mock_error_response)))
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
 })
