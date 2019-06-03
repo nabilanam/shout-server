@@ -26,11 +26,14 @@ const bad_request = () =>
 const login_error = () =>
   new ErrorResponse(http_status.UNAUTHORIZED, 'Wrong login credentials')
 
+const profile = profile => new Response(http_status.OK, profile)
+
 module.exports = {
   confirm_email,
   login_token,
   duplicate_key_error,
   internal_server_error,
   login_error,
-  bad_request
+  bad_request,
+  profile
 }
