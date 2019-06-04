@@ -26,6 +26,9 @@ const bad_request = () =>
 const login_error = () =>
   new ErrorResponse(http_status.UNAUTHORIZED, 'Wrong login credentials')
 
+const user_not_found = () =>
+  new ErrorResponse(http_status.NOT_FOUND, 'User not found')
+
 const profile = profile => new Response(http_status.OK, profile)
 
 module.exports = {
@@ -35,5 +38,6 @@ module.exports = {
   internal_server_error,
   login_error,
   bad_request,
+  user_not_found,
   profile
 }
