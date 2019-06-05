@@ -92,4 +92,5 @@ schema.post('findOneAndUpdate', function(error, res, next) {
   }
 })
 
-module.exports = User = mongoose.model('user', schema)
+const User = mongoose.model('user', schema)
+module.exports = User

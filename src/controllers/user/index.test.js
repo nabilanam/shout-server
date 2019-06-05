@@ -2,8 +2,8 @@ const memoryDB = require('../../database/memory')
 const config = require('config')
 const bcrypt = require('bcrypt')
 
+const User = require('../../models/User')
 const controller = require('./index')
-const ErrorResponse = require('../../response/ErrorResponse')
 const mail = require('../../mail')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
@@ -106,7 +106,7 @@ describe('User controller -> login', () => {
       })
       .catch(response => expect(response).toBeUndefined()))
 
-  test("should reject ErrorResponse with (401, 'Wrong login credentials') when (wrong username, password)", () =>
+  test('should reject ErrorResponse with (401, "Wrong login credentials") when (wrong username, password)', () =>
     controller
       .login(person.username + 'x', person.password)
       .then(response => expect(response).toBeUndefined())
@@ -115,7 +115,7 @@ describe('User controller -> login', () => {
         expect(response.error).toBe('Wrong login credentials')
       }))
 
-  test("should reject ErrorResponse with (401, 'Wrong login credentials') when (username, wrong password)", () =>
+  test('should reject ErrorResponse with (401, "Wrong login credentials") when (username, wrong password)', () =>
     controller
       .login(person.username, person.password + 'x')
       .then(response => expect(response).toBeUndefined())

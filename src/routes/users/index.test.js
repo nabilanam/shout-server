@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const memoryDB = require('../../database/memory')
 const app = require('../../app')
 const mail = require('../../mail')
+const User = require('../../models/User')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())

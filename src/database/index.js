@@ -10,8 +10,7 @@ const connect_uri = uri =>
       useCreateIndex: true,
       useFindAndModify: false
     })
-    .catch(error => {
-      console.error(error.message)
+    .catch(() => {
       process.exit(1)
     })
 

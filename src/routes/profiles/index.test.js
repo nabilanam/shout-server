@@ -5,6 +5,7 @@ const jsonwebtoken = require('jsonwebtoken')
 
 const app = require('../../app')
 const memoryDB = require('../../database/memory')
+const User = require('../../models/User')
 
 let user = null
 let token = null

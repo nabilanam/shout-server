@@ -6,10 +6,13 @@ let server = null
 
 const start = () => {
   server = new MongoMemoryServer()
-  return server
-    .getConnectionString()
-    .then(uri => db.connect_uri(uri))
-    .catch(err => console.error(err.message))
+  return (
+    server
+      .getConnectionString()
+      .then(uri => db.connect_uri(uri))
+      // eslint-disable-next-line no-console
+      .catch(console.error)
+  )
 }
 
 const stop = () => {
