@@ -29,7 +29,7 @@ const login_error = () =>
 const user_not_found = () =>
   new ErrorResponse(http_status.NOT_FOUND, 'User not found')
 
-const profile = profile => new Response(http_status.OK, profile)
+const ok_data = data => new Response(http_status.OK, data)
 
 module.exports = {
   confirm_email,
@@ -39,5 +39,5 @@ module.exports = {
   login_error,
   bad_request,
   user_not_found,
-  profile
+  ok_data
 }

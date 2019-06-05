@@ -10,7 +10,7 @@ const get = username => {
     )
     .then(user => {
       if (!user) throw new Error()
-      return response.profile(user)
+      return response.ok_data(user)
     })
     .catch(() => {
       throw response.user_not_found()
@@ -37,7 +37,7 @@ const update = (user, username, password, email, bio, quote, social) => {
       u._doc.created_at = undefined
       u._doc.updated_at = undefined
       u._doc.is_authenticated = undefined
-      return response.profile(u)
+      return response.ok_data(u)
     })
     .catch(() => {
       throw response.internal_server_error()
