@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "prod": "export NODE_ENV=production&& nodemon",
+    "lint": "eslint ./",
     "test": "jest || exit 0",
     "test:cov": "jest --coverage || true",
     "test:verb": "jest --verbose || true",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@types/jest": "^24.0.13",
     "coveralls": "^3.0.3",
+    "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "mongodb-memory-server": "^5.1.2",
     "nodemon": "^1.19.0",
