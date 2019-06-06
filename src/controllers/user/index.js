@@ -38,7 +38,7 @@ const login = (username, password) => {
       })
     )
     .catch(() => {
-      throw response.login_error()
+      throw response.unauthorized('Wrong login credentials')
     })
 }
 

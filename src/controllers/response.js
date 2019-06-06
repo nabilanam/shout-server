@@ -23,21 +23,23 @@ const internal_server_error = () =>
 const bad_request = () =>
   new ErrorResponse(http_status.BAD_REQUEST, 'Invalid request')
 
-const login_error = () =>
-  new ErrorResponse(http_status.UNAUTHORIZED, 'Wrong login credentials')
+const not_found = message => new ErrorResponse(http_status.NOT_FOUND, message)
 
-const user_not_found = () =>
-  new ErrorResponse(http_status.NOT_FOUND, 'User not found')
+const ok = data => new Response(http_status.OK, data)
 
-const ok_data = data => new Response(http_status.OK, data)
+const unauthorized = message => {
+  return message
+    ? new ErrorResponse(http_status.UNAUTHORIZED, message)
+    : new ErrorResponse(http_status.UNAUTHORIZED, 'Authorization required')
+}
 
 module.exports = {
   confirm_email,
   login_token,
   duplicate_key_error,
   internal_server_error,
-  login_error,
+  unauthorized,
   bad_request,
-  user_not_found,
-  ok_data
+  not_found,
+  ok
 }
