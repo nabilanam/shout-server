@@ -33,12 +33,16 @@ const unauthorized = message => {
     : new ErrorResponse(http_status.UNAUTHORIZED, 'Authorization required')
 }
 
+const access_denied = () =>
+  new ErrorResponse(http_status.FORBIDDEN, 'Access denied')
+
 module.exports = {
   confirm_email,
   login_token,
   duplicate_key_error,
   internal_server_error,
   unauthorized,
+  access_denied,
   bad_request,
   not_found,
   ok
