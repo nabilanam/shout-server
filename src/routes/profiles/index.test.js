@@ -92,17 +92,17 @@ describe('POST /api/profiles/update', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 403, error: "Access denied"} when {no token}', () =>
+  test('should return {status: 401, error: "Authorization required"} when {no token}', () =>
     request(app)
       .get('/api/profiles/update')
       .set('Accept', 'application/json')
       .send({ username: 'abc' })
       .expect('Content-Type', /json/)
-      .expect(403)
+      .expect(401)
       .then(res => {
         const { status, error } = res.body
-        expect(status).toBe(403)
-        expect(error).toBe('Access denied')
+        expect(status).toBe(401)
+        expect(error).toBe('Authorization required')
       })
       .catch(error => expect(error).toBeUndefined()))
 })

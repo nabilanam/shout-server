@@ -43,7 +43,7 @@ describe('auth middleware', () => {
       expect(req.user).toBeInstanceOf(User)
     }))
 
-  test('should set response to ErrorResponse with (403, "Access denied") when header(x-auth-token:"") ', () => {
+  test('should set response to ErrorResponse with (401, "Authorization required") when header(x-auth-token:"") ', () => {
     req.header = jest.fn().mockImplementation(key => {
       if (key === 'x-auth-token') return ''
     })
@@ -53,12 +53,12 @@ describe('auth middleware', () => {
       expect(status).toBeCalledTimes(1)
       expect(json).toBeCalledTimes(1)
       expect(response).toBeInstanceOf(ErrorResponse)
-      expect(response.status).toBe(403)
-      expect(response.error).toBe('Access denied')
+      expect(response.status).toBe(401)
+      expect(response.error).toBe('Authorization required')
     })
   })
 
-  test('should set response to ErrorResponse with (403, "Access denied") when header(x-auth-token: invalid)', () => {
+  test('should set response to ErrorResponse with (401, "Authorization required") when header(x-auth-token: invalid)', () => {
     req.header = jest.fn().mockImplementation(key => {
       if (key === 'x-auth-token') return 'xxx'
     })
@@ -68,8 +68,8 @@ describe('auth middleware', () => {
       expect(status).toBeCalledTimes(1)
       expect(json).toBeCalledTimes(1)
       expect(response).toBeInstanceOf(ErrorResponse)
-      expect(response.status).toBe(403)
-      expect(response.error).toBe('Access denied')
+      expect(response.status).toBe(401)
+      expect(response.error).toBe('Authorization required')
     })
   })
 })
