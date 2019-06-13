@@ -23,7 +23,10 @@ const internal_server_error = () =>
 const bad_request = () =>
   new ErrorResponse(http_status.BAD_REQUEST, 'Invalid request')
 
-const not_found = message => new ErrorResponse(http_status.NOT_FOUND, message)
+const not_found = message =>
+  message
+    ? new ErrorResponse(http_status.NOT_FOUND, message)
+    : new ErrorResponse(http_status.NOT_FOUND, 'Not found')
 
 const ok = data => new Response(http_status.OK, data)
 
