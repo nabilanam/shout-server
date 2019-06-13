@@ -1,6 +1,8 @@
 const { Schema, model } = require('mongoose')
 const { created_at, updated_at } = require('../audit')
 const errors = require('../errors')
+const Like = require('../Like')
+const Comment = require('../Comment')
 
 const schema = new Schema({
   user: {
@@ -20,6 +22,12 @@ const schema = new Schema({
 
 schema.pre('save', function(next) {
   this.updated_at = Date.now()
+  next()
+})
+
+schema.pre('remove', async function(next) {
+  for (const like of this.likes) await Like.deleteOne({ _id: like })
+  for (const comment of this.comments) await Comment.deleteOne({ _id: comment })
   next()
 })
 
