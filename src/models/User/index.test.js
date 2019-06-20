@@ -25,7 +25,7 @@ describe('User model', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should reject Error with (DUPLICATE_KEY) when save with (duplicate username)', () =>
+  test('should reject Error with (\'username\') when save with (duplicate username)', () =>
     new User({
       username: 'abc',
       email: 'mno@mno.com',
@@ -33,9 +33,9 @@ describe('User model', () => {
     })
       .save()
       .then(user => expect(user).toBeUndefined())
-      .catch(error => expect(error.message).toBe(errors.DUPLICATE_KEY)))
+      .catch(error => expect(error.message).toBe('username')))
 
-  test('should reject Error with (DUPLICATE_KEY) when save with (duplicate email)', () =>
+  test('should reject Error with (\'email\') when save with (duplicate email)', () =>
     new User({
       username: 'mno',
       email: 'abc@abc.com',
@@ -43,7 +43,7 @@ describe('User model', () => {
     })
       .save()
       .then(user => expect(user).toBeUndefined())
-      .catch(error => expect(error.message).toBe(errors.DUPLICATE_KEY)))
+      .catch(error => expect(error.message).toBe('email')))
 
   test('should reject Error with (FIELD_REQUIRED) when save with (undefined email)', () =>
     new User({ username: 'pqr', password: 'pqr' })

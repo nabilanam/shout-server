@@ -76,7 +76,9 @@ schema.pre('findOneAndUpdate', function(next) {
 
 schema.post('save', function(error, doc, next) {
   if (error.name === 'MongoError' && error.code === 11000) {
-    next(new Error(errors.DUPLICATE_KEY))
+    const r = /index:\s(?:.*\.)?\$?(?:([_a-z0-9]*)(?:_\d*)|([_a-z0-9]*))\s*dup/i
+    const match = error.errmsg.match(r)
+    next(new Error(match[1]))
   } else if (error.name === 'ValidationError') {
     next(new Error(errors.FIELD_REQUIRED))
   } else {
