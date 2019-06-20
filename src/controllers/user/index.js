@@ -3,7 +3,6 @@ const config = require('config')
 
 const User = require('../../models/User')
 const response = require('../response')
-const errors = require('../../models/errors')
 
 const create = (username, email, password) => {
   if (!(username && email && password))
@@ -21,8 +20,10 @@ const create = (username, email, password) => {
         .then(user => response.confirm_email(email, user.auth_key))
     )
     .catch(err => {
-      if (err.message === errors.DUPLICATE_KEY)
-        throw response.duplicate_key_error()
+      if (err.message === 'username')
+        throw response.duplicate_key_error('Username')
+      else if (err.message === 'email')
+        throw response.duplicate_key_error('Email')
       throw response.internal_server_error()
     })
 }

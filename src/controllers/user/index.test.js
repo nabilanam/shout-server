@@ -28,22 +28,22 @@ describe('User controller -> create', () => {
       .catch(error => expect(error).toBeUndefined())
   })
 
-  test('should reject ErrorResponse with (400, "Username or email already exists") when (duplicate username)', () =>
+  test('should reject ErrorResponse with (400, "Username already exists") when (duplicate username)', () =>
     controller
       .create(person.username, person.email + 'x', person.password)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
-        expect(response.error).toBe('Username or email already exists')
+        expect(response.error).toBe('Username already exists')
       }))
 
-  test('should reject ErrorResponse with (400, "Username or email already exists") when (duplicate email)', () =>
+  test('should reject ErrorResponse with (400, "Email already exists") when (duplicate email)', () =>
     controller
       .create(person.username + 'x', person.email, person.password)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
-        expect(response.error).toBe('Username or email already exists')
+        expect(response.error).toBe('Email already exists')
       }))
 
   test('should reject ErrorResponse with (400, "Invalid request") for when (username, password)', () =>
