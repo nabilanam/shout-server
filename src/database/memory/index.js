@@ -3,9 +3,17 @@ const { MongoMemoryServer } = require('mongodb-memory-server')
 const db = require('../index')
 
 let server = null
+const options = {
+  binary: {
+    version: '4.0.9'
+  },
+  instance: {
+    storageEngine: 'wiredTiger'
+  }
+}
 
 const start = () => {
-  server = new MongoMemoryServer()
+  server = new MongoMemoryServer(options)
   return (
     server
       .getConnectionString()
