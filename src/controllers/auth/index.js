@@ -3,7 +3,7 @@ const client = require('../../database/redis')
 const User = require('../../models/User')
 const response = require('../response')
 
-const login_token = auth_key =>
+const confirm_email = auth_key =>
   new Promise((resolve, reject) => {
     if (auth_key)
       return User.findOneAndUpdate(
@@ -41,7 +41,7 @@ const logout = (token, seconds) => {
 }
 
 module.exports = {
-  login_token,
+  confirm_email,
   login,
   logout
 }

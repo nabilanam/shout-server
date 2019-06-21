@@ -1,5 +1,7 @@
 const request = require('supertest')
 const bcrypt = require('bcrypt')
+const jsonwebtoken = require('jsonwebtoken')
+const client = require('../../database/redis')
 const app = require('../../app')
 const memoryDB = require('../../database/memory')
 const User = require('../../models/User')
@@ -8,7 +10,7 @@ const config = require('config')
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())
 
-describe('GET /auth/:auth_key', () => {
+describe('GET /auth/confirm/:auth_key', () => {
   let auth_key = null
 
   beforeAll(() =>
@@ -21,9 +23,9 @@ describe('GET /auth/:auth_key', () => {
       .then(user => (auth_key = user.auth_key))
   )
 
-  test('should return {status: 500, error: "Internal server error"} when /auth', () =>
+  test('should return {status: 500, error: "Internal server error"} when /auth/confirm/:wrong_key', () =>
     request(app)
-      .get('/auth')
+      .get('/auth/confirm/abc')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .then(res => {
@@ -32,20 +34,9 @@ describe('GET /auth/:auth_key', () => {
         expect(error).toBe('Internal server error')
       }))
 
-  test('should return {status: 500, error: "Internal server error"} when /auth/:wrong_key', () =>
+  test('should return {status: 200, data: token} when /auth/confirm/:auth_key', () =>
     request(app)
-      .get('/auth/abc')
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .then(res => {
-        const { status, error } = res.body
-        expect(status).toBe(500)
-        expect(error).toBe('Internal server error')
-      }))
-
-  test('should return {status: 200, data: token} when /auth/:auth_key', () =>
-    request(app)
-      .get(`/auth/${auth_key}`)
+      .get(`/auth/confirm/${auth_key}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .then(res => {
@@ -149,5 +140,38 @@ describe('POST /auth/login', () => {
         const { status, data } = res.body
         expect(status).toBe(200)
         expect(data.split('.').length).toBe(3)
+      }))
+})
+
+describe('GET /auth/logout', () => {
+  afterAll(() => client.end(false))
+
+  const token = jsonwebtoken.sign({ id: 123 }, config.get('jwt_secret'), {
+    expiresIn: '1m'
+  })
+
+  test('should return {status: 200, data: "Logout success"} when (x-auth-token)', () =>
+    request(app)
+      .get('/auth/logout')
+      .set('Accept', 'application/json')
+      .set('x-auth-token', token)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(res => {
+        const { status, data } = res.body
+        expect(status).toBe(200)
+        expect(data).toBe('Logout success')
+      }))
+
+  test('should return {status: 401, data: "Authorization required"} when ()', () =>
+    request(app)
+      .get('/auth/logout')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(401)
+        expect(error).toBe('Authorization required')
       }))
 })

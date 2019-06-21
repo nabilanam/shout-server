@@ -3,15 +3,9 @@ const router = express.Router()
 const middleware = require('../../middlewares/auth')
 const controller = require('../../controllers/auth')
 
-router.get('/', (req, res) =>
+router.get('/confirm/:auth_key', (req, res) =>
   controller
-    .login_token()
-    .catch(response => res.status(response.status).json(response))
-)
-
-router.get('/:auth_key', (req, res) =>
-  controller
-    .login_token(req.params.auth_key)
+    .confirm_email(req.params.auth_key)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 )
@@ -21,6 +15,14 @@ router.post('/login', middleware.login, (req, res) => {
 
   return controller
     .login(username, password)
+    .then(response => res.status(response.status).json(response))
+    .catch(response => res.status(response.status).json(response))
+})
+
+router.get('/logout', middleware.logout, (req, res) => {
+  const { token, seconds } = req
+  return controller
+    .logout(token, seconds)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 })

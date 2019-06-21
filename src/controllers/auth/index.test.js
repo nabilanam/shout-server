@@ -9,7 +9,7 @@ const controller = require('./index')
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())
 
-describe('auth controller -> login_token', () => {
+describe('auth controller -> confirm_email', () => {
   let auth_key = null
 
   beforeAll(() =>
@@ -23,19 +23,19 @@ describe('auth controller -> login_token', () => {
   )
 
   test('should reject ErrorResponse with (500, "Internal server error") when ()', () =>
-    controller.login_token().catch(response => {
+    controller.confirm_email().catch(response => {
       expect(response.status).toBe(500)
       expect(response.error).toBe('Internal server error')
     }))
 
   test('should reject ErrorResponse with (500, "Internal server error") when (wrong auth_key)', () =>
-    controller.login_token('abcde').catch(response => {
+    controller.confirm_email('abcde').catch(response => {
       expect(response.status).toBe(500)
       expect(response.error).toBe('Internal server error')
     }))
 
   test('should resolve Response with (200, data: token) when (auth_key)', () =>
-    controller.login_token(auth_key).then(response => {
+    controller.confirm_email(auth_key).then(response => {
       expect(response.status).toBe(200)
       expect(response.data.split('.').length).toBe(3)
     }))
