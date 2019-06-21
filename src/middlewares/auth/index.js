@@ -1,5 +1,6 @@
 const jsonwebtoken = require('jsonwebtoken')
 const http_status = require('http-status-codes')
+const client = require('../../database/redis')
 const { check, validationResult } = require('express-validator/check')
 const { username, password } = require('config').get('validation.user')
 const jwt_secret = require('config').get('jwt_secret')
@@ -9,16 +10,26 @@ const ValidatorResponse = require('../../response/ValidatorResponse')
 
 const verify = async (req, res, next) => {
   const token = req.header('x-auth-token')
+  const unauthorized = response.unauthorized()
 
-  try {
-    const decoded = jsonwebtoken.verify(token, jwt_secret)
-    const user = await User.findById(decoded.id)
-    req.user = user
-    next()
-  } catch (err) {
-    const unauthorized = response.unauthorized()
-    res.status(unauthorized.status).json(unauthorized)
-  }
+  client.get(token, async (error, value) => {
+    if (!error && value === 'true') {
+      return res.status(unauthorized.status).json(unauthorized)
+    }
+
+    try {
+      const decoded = jsonwebtoken.verify(token, jwt_secret)
+      const user = await User.findById(decoded.id)
+
+      if (!user.is_authenticated)
+        return res.status(unauthorized.status).json(unauthorized)
+
+      req.user = user
+      next()
+    } catch (err) {
+      res.status(unauthorized.status).json(unauthorized)
+    }
+  })
 }
 
 const login = [
