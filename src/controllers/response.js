@@ -1,3 +1,4 @@
+const config = require('config')
 const Response = require('../response/Response')
 const ErrorResponse = require('../response/ErrorResponse')
 const ValidatorResponse = require('../response/ValidatorResponse')
@@ -11,7 +12,7 @@ const confirm_email = (to, auth_key) =>
     .then(() => new Response(http_status.OK, 'Check email address'))
 
 const login_token = id => {
-  const token = util.jwt_token(id, '30d')
+  const token = util.jwt_token(id, config.get('jwt_expiry'))
   return new Response(http_status.OK, token)
 }
 
