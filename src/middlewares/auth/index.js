@@ -56,7 +56,22 @@ const login = [
   }
 ]
 
+const logout = async (req, res, next) => {
+  const token = req.header('x-auth-token')
+
+  try {
+    const decoded = jsonwebtoken.verify(token, jwt_secret)
+    req.token = token
+    req.seconds = decoded.exp - decoded.iat
+    next()
+  } catch (err) {
+    const unauthorized = response.unauthorized()
+    res.status(unauthorized.status).json(unauthorized)
+  }
+}
+
 module.exports = {
   verify,
-  login
+  login,
+  logout
 }
