@@ -1,11 +1,8 @@
 const config = require('config')
 const request = require('supertest')
-const bcrypt = require('bcrypt')
-
 const memoryDB = require('../../database/memory')
 const app = require('../../app')
 const mail = require('../../mail')
-const User = require('../../models/User')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
 afterAll(() => memoryDB.stop())
@@ -88,101 +85,4 @@ describe('POST /api/users', () => {
         expect(data).toBe('Check email address')
       })
   })
-})
-
-describe('POST /api/users/login', () => {
-  const person = {
-    username: 'mno',
-    email: 'mno@mno.com',
-    password: 'mnomnomno'
-  }
-
-  const different_person = {
-    username: 'pqr',
-    email: 'pqr@pqr.com',
-    password: 'mnomnomno'
-  }
-
-  beforeAll(async done => {
-    await new User({
-      ...person,
-      is_authenticated: true,
-      password: bcrypt.hashSync(person.password, config.get('salt_rounds'))
-    }).save()
-
-    await new User({
-      ...different_person,
-      password: bcrypt.hashSync(person.password, config.get('salt_rounds'))
-    }).save()
-
-    done()
-  })
-
-  test('should return {status: 400, error: "Username is required", param: "username"} when {}', () =>
-    request(app)
-      .post('/api/users/login')
-      .send({})
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(400)
-      .then(res => {
-        const { status, error, param } = res.body
-        expect(status).toBe(400)
-        expect(error).toBe('Username is required')
-        expect(param).toBe('username')
-      }))
-
-  test('should return {status: 400, error: "Password is required", param: "password"} when {username}', () =>
-    request(app)
-      .post('/api/users/login')
-      .send({ username: person.username })
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(400)
-      .then(res => {
-        const { status, error, param } = res.body
-        expect(status).toBe(400)
-        expect(error).toBe('Password is required')
-        expect(param).toBe('password')
-      }))
-
-  test('should return {status: 400, error: "Username is required", param: "username"} when {password}', () =>
-    request(app)
-      .post('/api/users/login')
-      .send({ password: person.password })
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(400)
-      .then(res => {
-        const { status, error, param } = res.body
-        expect(status).toBe(400)
-        expect(error).toBe('Username is required')
-        expect(param).toBe('username')
-      }))
-
-  test('should return {status: 401, error: "Email address is not confirmed"} when unconfirmed {username, password}', () =>
-    request(app)
-      .post('/api/users/login')
-      .send(different_person)
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(401)
-      .then(res => {
-        const { status, error } = res.body
-        expect(status).toBe(401)
-        expect(error).toBe('Email address is not confirmed')
-      }))
-
-  test('should return {status: 200, data: token} when {username, password}', () =>
-    request(app)
-      .post('/api/users/login')
-      .send(person)
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200)
-      .then(res => {
-        const { status, data } = res.body
-        expect(status).toBe(200)
-        expect(data.split('.').length).toBe(3)
-      }))
 })
