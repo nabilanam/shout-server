@@ -1,6 +1,8 @@
 const memoryDB = require('../../database/memory')
 const config = require('config')
 const bcrypt = require('bcrypt')
+const jsonwebtoken = require('jsonwebtoken')
+const client = require('../../database/redis')
 const User = require('../../models/User')
 const controller = require('./index')
 
@@ -114,4 +116,22 @@ describe('auth controller -> login', () => {
         expect(response.status).toBe(400)
         expect(response.error).toBe('Invalid request')
       }))
+})
+
+describe('auth controller -> login', () => {
+  afterAll(() => client.end(false))
+
+  const token = jsonwebtoken.sign({ id: 123 }, config.get('jwt_secret'), {
+    expiresIn: '1m'
+  })
+
+  test('should resolve Response with (200, "Logout success") when (token)', () => {
+    return controller.logout(token, 10).then(response => {
+      expect(response.status).toBe(200)
+      expect(response.data).toBe('Logout success')
+      return client.get(token, (error, value) => {
+        expect(value).toBe('true')
+      })
+    })
+  })
 })

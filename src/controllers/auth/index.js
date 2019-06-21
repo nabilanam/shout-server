@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt')
+const client = require('../../database/redis')
 const User = require('../../models/User')
 const response = require('../response')
 
@@ -34,7 +35,13 @@ const login = (username, password) => {
     })
 }
 
+const logout = (token, seconds) => {
+  client.setex(token, seconds, true)
+  return Promise.resolve(response.ok('Logout success'))
+}
+
 module.exports = {
   login_token,
-  login
+  login,
+  logout
 }
