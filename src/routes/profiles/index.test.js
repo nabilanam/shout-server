@@ -16,7 +16,8 @@ beforeAll(
       new User({
         username: 'abc',
         email: 'abc@abc.com',
-        password: bcrypt.hashSync('mno', config.get('salt_rounds'))
+        password: bcrypt.hashSync('mno', config.get('salt_rounds')),
+        is_authenticated: true
       })
         .save()
         .then(u => {

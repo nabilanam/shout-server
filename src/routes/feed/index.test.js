@@ -18,7 +18,8 @@ beforeAll(async done => {
   user = await new User({
     username: 'abc',
     email: 'abc@abc.com',
-    password: bcrypt.hashSync('mno', config.get('salt_rounds'))
+    password: bcrypt.hashSync('mno', config.get('salt_rounds')),
+    is_authenticated: true
   }).save()
 
   token = jsonwebtoken.sign({ id: user.id }, config.get('jwt_secret'), {
