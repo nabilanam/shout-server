@@ -97,12 +97,26 @@ describe('POST /api/users/login', () => {
     password: 'mnomnomno'
   }
 
-  beforeAll(() =>
-    new User({
+  const different_person = {
+    username: 'pqr',
+    email: 'pqr@pqr.com',
+    password: 'mnomnomno'
+  }
+
+  beforeAll(async done => {
+    await new User({
       ...person,
+      is_authenticated: true,
       password: bcrypt.hashSync(person.password, config.get('salt_rounds'))
     }).save()
-  )
+
+    await new User({
+      ...different_person,
+      password: bcrypt.hashSync(person.password, config.get('salt_rounds'))
+    }).save()
+
+    done()
+  })
 
   test('should return {status: 400, error: "Username is required", param: "username"} when {}', () =>
     request(app)
@@ -144,6 +158,19 @@ describe('POST /api/users/login', () => {
         expect(status).toBe(400)
         expect(error).toBe('Username is required')
         expect(param).toBe('username')
+      }))
+
+  test('should return {status: 401, error: "Email address is not confirmed"} when unconfirmed {username, password}', () =>
+    request(app)
+      .post('/api/users/login')
+      .send(different_person)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(401)
+        expect(error).toBe('Email address is not confirmed')
       }))
 
   test('should return {status: 200, data: token} when {username, password}', () =>

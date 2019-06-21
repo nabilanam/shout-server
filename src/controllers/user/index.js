@@ -34,11 +34,14 @@ const login = (username, password) => {
   return User.findOne({ username })
     .then(user =>
       bcrypt.compare(password, user.password).then(res => {
-        if (res) return response.login_token(user.id)
-        throw new Error()
+        if (!res) throw new Error()
+        if (!user.is_authenticated) throw new Error('auth')
+        return response.login_token(user.id)
       })
     )
-    .catch(() => {
+    .catch(error => {
+      if (error.message === 'auth')
+        throw response.unauthorized('Email address is not confirmed')
       throw response.unauthorized('Wrong login credentials')
     })
 }

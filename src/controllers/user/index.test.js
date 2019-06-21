@@ -83,11 +83,12 @@ describe('User controller -> create', () => {
       }))
 })
 
-describe('User controller -> login', () => {
+describe('User controller -> login (is_authenticated)', () => {
   const person = {
     username: 'mno',
     email: 'mno@mno.com',
-    password: 'mno'
+    password: 'mno',
+    is_authenticated: true
   }
 
   beforeAll(() =>
@@ -131,5 +132,29 @@ describe('User controller -> login', () => {
       .catch(response => {
         expect(response.status).toBe(400)
         expect(response.error).toBe('Invalid request')
+      }))
+})
+
+describe('User controller -> login (!is_authenticated)', () => {
+  const person = {
+    username: 'pqr',
+    email: 'pqr@pqr.com',
+    password: 'pqr'
+  }
+
+  beforeAll(() =>
+    new User({
+      ...person,
+      password: bcrypt.hashSync(person.password, config.get('salt_rounds'))
+    }).save()
+  )
+
+  test('should reject ErrorResponse with (401, "Email address is not confirmed") when (username, password)', () =>
+    controller
+      .login(person.username, person.password)
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(401)
+        expect(response.error).toBe('Email address is not confirmed')
       }))
 })
