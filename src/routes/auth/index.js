@@ -19,6 +19,13 @@ router.post('/login', middleware.login, (req, res) => {
     .catch(response => res.status(response.status).json(response))
 })
 
+router.get('/extend', middleware.extend, (req, res) =>
+  controller
+    .extend(req.user_id)
+    .then(response => res.status(response.status).json(response))
+    .catch(response => res.status(response.status).json(response))
+)
+
 router.get('/logout', middleware.logout, (req, res) => {
   const { token, seconds } = req
   return controller

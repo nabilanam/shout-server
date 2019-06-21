@@ -35,6 +35,18 @@ const login = (username, password) => {
     })
 }
 
+const extend = user_id => {
+  if (!user_id) return Promise.reject(response.bad_request())
+
+  return User.findById(user_id)
+    .then(user => response.login_token(user.id))
+    .catch(error => {
+      if (error.message === 'auth')
+        throw response.unauthorized('Email address is not confirmed')
+      throw response.internal_server_error()
+    })
+}
+
 const logout = (token, seconds) => {
   client.setex(token, seconds, true)
   return Promise.resolve(response.ok('Logout success'))
@@ -43,5 +55,6 @@ const logout = (token, seconds) => {
 module.exports = {
   confirm_email,
   login,
+  extend,
   logout
 }

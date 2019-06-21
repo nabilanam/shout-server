@@ -23,22 +23,31 @@ describe('auth controller -> confirm_email', () => {
   )
 
   test('should reject ErrorResponse with (500, "Internal server error") when ()', () =>
-    controller.confirm_email().catch(response => {
-      expect(response.status).toBe(500)
-      expect(response.error).toBe('Internal server error')
-    }))
+    controller
+      .confirm_email()
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(500)
+        expect(response.error).toBe('Internal server error')
+      }))
 
   test('should reject ErrorResponse with (500, "Internal server error") when (wrong auth_key)', () =>
-    controller.confirm_email('abcde').catch(response => {
-      expect(response.status).toBe(500)
-      expect(response.error).toBe('Internal server error')
-    }))
+    controller
+      .confirm_email('abcde')
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(500)
+        expect(response.error).toBe('Internal server error')
+      }))
 
   test('should resolve Response with (200, data: token) when (auth_key)', () =>
-    controller.confirm_email(auth_key).then(response => {
-      expect(response.status).toBe(200)
-      expect(response.data.split('.').length).toBe(3)
-    }))
+    controller
+      .confirm_email(auth_key)
+      .then(response => {
+        expect(response.status).toBe(200)
+        expect(response.data.split('.').length).toBe(3)
+      })
+      .catch(response => expect(response).toBeUndefined()))
 })
 
 describe('auth controller -> login', () => {
@@ -118,7 +127,48 @@ describe('auth controller -> login', () => {
       }))
 })
 
-describe('auth controller -> login', () => {
+describe('auth controller -> extend', () => {
+  let user = null
+
+  beforeAll(() =>
+    new User({
+      username: 'xyz',
+      email: 'xyz@xyz.com',
+      password: 'abcabcabc'
+    })
+      .save()
+      .then(u => (user = u))
+  )
+
+  test('should reject ErrorResponse with (400, "Invalid request") when ()', () =>
+    controller
+      .extend()
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
+
+  test('should reject ErrorResponse with (500, "Internal server error") when (wrong user_id)', () =>
+    controller
+      .extend(user.id + 'x')
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(500)
+        expect(response.error).toBe('Internal server error')
+      }))
+
+  test('should resolve Response with (200, data: token) when (user_id)', () =>
+    controller
+      .extend(user.id)
+      .then(response => {
+        expect(response.status).toBe(200)
+        expect(response.data.split('.').length).toBe(3)
+      })
+      .catch(response => expect(response).toBeUndefined()))
+})
+
+describe('auth controller -> logout', () => {
   afterAll(() => client.end(false))
 
   const token = jsonwebtoken.sign({ id: 123 }, config.get('jwt_secret'), {
@@ -126,12 +176,15 @@ describe('auth controller -> login', () => {
   })
 
   test('should resolve Response with (200, "Logout success") when (token)', () => {
-    return controller.logout(token, 10).then(response => {
-      expect(response.status).toBe(200)
-      expect(response.data).toBe('Logout success')
-      return client.get(token, (error, value) => {
-        expect(value).toBe('true')
+    return controller
+      .logout(token, 10)
+      .then(response => {
+        expect(response.status).toBe(200)
+        expect(response.data).toBe('Logout success')
+        return client.get(token, (error, value) => {
+          expect(value).toBe('true')
+        })
       })
-    })
+      .catch(response => expect(response).toBeUndefined())
   })
 })

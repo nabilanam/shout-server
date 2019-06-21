@@ -8,7 +8,11 @@ const User = require('../../models/User')
 const config = require('config')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
-afterAll(() => memoryDB.stop())
+afterAll(async done => {
+  await memoryDB.stop()
+  await client.end(false)
+  done()
+})
 
 describe('GET /auth/confirm/:auth_key', () => {
   let auth_key = null
@@ -144,8 +148,6 @@ describe('POST /auth/login', () => {
 })
 
 describe('GET /auth/logout', () => {
-  afterAll(() => client.end(false))
-
   const token = jsonwebtoken.sign({ id: 123 }, config.get('jwt_secret'), {
     expiresIn: '1m'
   })
@@ -166,6 +168,52 @@ describe('GET /auth/logout', () => {
   test('should return {status: 401, data: "Authorization required"} when ()', () =>
     request(app)
       .get('/auth/logout')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(401)
+        expect(error).toBe('Authorization required')
+      }))
+})
+
+describe('GET /auth/extend', () => {
+  let user = null
+  let token = null
+
+  beforeAll(async done => {
+    await User.deleteMany({})
+    user = await new User({
+      username: 'abc',
+      email: 'abc@abc',
+      password: 'abc',
+      is_authenticated: true
+    }).save()
+
+    token = jsonwebtoken.sign({ id: user.id }, config.get('jwt_secret'), {
+      expiresIn: '1m'
+    })
+
+    done()
+  })
+
+  test('should return {status: 200, data: token} when (x-auth-token)', () =>
+    request(app)
+      .get('/auth/extend')
+      .set('Accept', 'application/json')
+      .set('x-auth-token', token)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(res => {
+        const { status, data } = res.body
+        expect(status).toBe(200)
+        expect(data.split('.').length).toBe(3)
+      }))
+
+  test('should return {status: 401, data: "Authorization required"} when ()', () =>
+    request(app)
+      .get('/auth/extend')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(401)
