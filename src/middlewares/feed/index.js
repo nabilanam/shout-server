@@ -1,7 +1,7 @@
 const http_status = require('http-status-codes')
 const ObjectId = require('mongoose').Types.ObjectId
 const { body, param, validationResult } = require('express-validator/check')
-const auth = require('../auth')
+const { verify } = require('../auth')
 const ValidatorResponse = require('../../response/ValidatorResponse')
 
 const post_limit = {
@@ -24,7 +24,7 @@ const check_validation_result = (req, res, next) => {
 }
 
 const post_add = [
-  auth,
+  verify,
   body('text')
     .not()
     .isEmpty()
@@ -40,7 +40,7 @@ const post_add = [
 ]
 
 const post_update = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))
@@ -60,7 +60,7 @@ const post_update = [
 ]
 
 const post_get = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))
@@ -69,7 +69,7 @@ const post_get = [
 ]
 
 const posts_get = [
-  auth,
+  verify,
   param('page')
     .exists()
     .isNumeric()
@@ -80,7 +80,7 @@ const posts_get = [
 ]
 
 const post_remove = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))
@@ -89,7 +89,7 @@ const post_remove = [
 ]
 
 const like = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))
@@ -98,7 +98,7 @@ const like = [
 ]
 
 const comment_add = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))
@@ -120,7 +120,7 @@ const comment_add = [
 ]
 
 const comment_update = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))
@@ -146,7 +146,7 @@ const comment_update = [
 ]
 
 const comment_remove = [
-  auth,
+  verify,
   param('post_id')
     .exists()
     .custom(id => ObjectId.isValid(id))

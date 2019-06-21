@@ -4,7 +4,7 @@ const jwt_secret = require('config').get('jwt_secret')
 const User = require('../../models/User')
 const response = require('../../controllers/response')
 
-const auth = async (req, res, next) => {
+const verify = async (req, res, next) => {
   const token = req.header('x-auth-token')
 
   try {
@@ -18,4 +18,6 @@ const auth = async (req, res, next) => {
   }
 }
 
-module.exports = auth
+module.exports = {
+  verify
+}

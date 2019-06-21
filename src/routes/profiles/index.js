@@ -1,14 +1,14 @@
 const router = require('express').Router()
-const auth = require('../../middlewares/auth')
+const { verify } = require('../../middlewares/auth')
 const controller = require('../../controllers/profile')
 const { bad_request } = require('../../controllers/response')
 
-router.get('/', auth, (req, res) => {
+router.get('/', verify, (req, res) => {
   const response = bad_request()
   res.status(response.status).json(response)
 })
 
-router.get('/:username', auth, (req, res) => {
+router.get('/:username', verify, (req, res) => {
   const username = req.params.username
 
   return controller
@@ -17,7 +17,7 @@ router.get('/:username', auth, (req, res) => {
     .catch(response => res.status(response.status).json(response))
 })
 
-router.post('/update', auth, (req, res) => {
+router.post('/update', verify, (req, res) => {
   const { username, password, email, bio, quote, social } = req.body
 
   return controller

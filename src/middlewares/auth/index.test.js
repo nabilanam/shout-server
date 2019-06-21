@@ -2,7 +2,7 @@ const jsonwebtoken = require('jsonwebtoken')
 const config = require('config')
 
 const memoryDB = require('../../database/memory')
-const auth = require('./index')
+const { verify } = require('./index')
 const User = require('../../models/User')
 const ErrorResponse = require('../../response/ErrorResponse')
 const jwt_secret = config.get('jwt_secret')
@@ -37,7 +37,7 @@ describe('auth middleware', () => {
   })
 
   test('should call next when user found by header(x-auth-token)', () =>
-    auth(req, res, next).then(() => {
+    verify(req, res, next).then(() => {
       expect(next).toBeCalledTimes(1)
       expect(req.user).toBeDefined()
       expect(req.user).toBeInstanceOf(User)
@@ -47,7 +47,7 @@ describe('auth middleware', () => {
     req.header = jest.fn().mockImplementation(key => {
       if (key === 'x-auth-token') return ''
     })
-    auth(req, res, next).then(() => {
+    verify(req, res, next).then(() => {
       const response = json.mock.calls[0][0]
       expect(next).toBeCalledTimes(0)
       expect(status).toBeCalledTimes(1)
@@ -62,7 +62,7 @@ describe('auth middleware', () => {
     req.header = jest.fn().mockImplementation(key => {
       if (key === 'x-auth-token') return 'xxx'
     })
-    auth(req, res, next).then(() => {
+    verify(req, res, next).then(() => {
       const response = json.mock.calls[0][0]
       expect(next).toBeCalledTimes(0)
       expect(status).toBeCalledTimes(1)
