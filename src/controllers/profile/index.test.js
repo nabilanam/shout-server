@@ -50,24 +50,26 @@ describe('profile controller -> get', () => {
 describe('profile controller -> update', () => {
   let user = null
 
-  beforeAll(() =>
-    new User({
+  beforeEach(async done => {
+    await User.deleteMany({})
+
+    user = await new User({
       username: 'mno',
       email: 'mno@mno.com',
-      password: '123'
-    })
-      .save()
-      .then(u => (user = u))
-  )
+      password: '123',
+      is_authenticated: true
+    }).save()
 
-  test('should resolve when (user)', () =>
+    done()
+  })
+
+  test('should resolve Response with (status, usesrname, email) when (user)', () =>
     controller
       .update(user)
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data.username).toBe('mno')
         expect(response.data.email).toBe('mno@mno.com')
-        expect(response.data._id).toBeUndefined()
         expect(response.data.__v).toBeUndefined()
         expect(response.data.password).toBeUndefined()
         expect(response.data.auth_key).toBeUndefined()
@@ -76,6 +78,26 @@ describe('profile controller -> update', () => {
         expect(response.data.is_authenticated).toBeUndefined()
       })
       .catch(response => expect(response).toBeUndefined()))
+
+  test('should resolve Response with (200, "Check email address") when (user)', () => {
+    const nodemailer = require('nodemailer')
+    const sendMail_mock = jest.fn().mockResolvedValue()
+    const createTransport_mock = jest
+      .spyOn(nodemailer, 'createTransport')
+      .mockImplementation(() => {
+        return { sendMail: sendMail_mock }
+      })
+
+    return controller
+      .update(user, undefined, undefined, 'mmo@mmo.com')
+      .then(response => {
+        expect(response.status).toBe(200)
+        expect(response.data).toBe('Check email address')
+        expect(sendMail_mock).toBeCalledTimes(1)
+        expect(createTransport_mock).toBeCalledTimes(1)
+      })
+      .catch(response => expect(response).toBeUndefined())
+  })
 
   test('should reject ErrorResponse with (500, "Internal server error") when ()', () =>
     controller

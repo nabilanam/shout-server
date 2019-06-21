@@ -22,7 +22,10 @@ const update = (user, username, password, email, bio, quote, social) => {
 
   if (username) user.username = username
   if (password) user.password = password
-  if (email) user.email = email
+  if (email && email !== user.email) {
+    user.email = email
+    user.is_authenticated = false
+  }
   if (bio) user.bio = bio
   if (quote) user.quote = quote
   if (social) user.social = social
@@ -30,14 +33,17 @@ const update = (user, username, password, email, bio, quote, social) => {
   return user
     .save()
     .then(u => {
-      u._doc._id = undefined
-      u._doc.__v = undefined
-      u._doc.auth_key = undefined
-      u._doc.password = undefined
-      u._doc.created_at = undefined
-      u._doc.updated_at = undefined
-      u._doc.is_authenticated = undefined
-      return response.ok(u)
+      if (!u.is_authenticated) {
+        return response.confirm_email(email, u._doc.auth_key)
+      } else {
+        u._doc.__v = undefined
+        u._doc.auth_key = undefined
+        u._doc.password = undefined
+        u._doc.created_at = undefined
+        u._doc.updated_at = undefined
+        u._doc.is_authenticated = undefined
+        return response.ok(u)
+      }
     })
     .catch(() => {
       throw response.internal_server_error()
