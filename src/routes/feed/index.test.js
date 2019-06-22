@@ -8,6 +8,7 @@ const User = require('../../models/User')
 const Post = require('../../models/Post')
 const Comment = require('../../models/Comment')
 const app = require('../../app')
+const client = require('../../database/redis')
 
 let user = null
 let token = null
@@ -29,7 +30,11 @@ beforeAll(async done => {
   done()
 }, config.get('timeout'))
 
-afterAll(() => memoryDB.stop())
+afterAll(async done => {
+  await memoryDB.stop()
+  await client.end(false)
+  done()
+})
 
 describe('POST /api/feed/', () => {
   test('should return {status: 401, error: \'Authorization required\'} when no x-auth-token', () =>

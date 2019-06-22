@@ -3,9 +3,15 @@ const request = require('supertest')
 const memoryDB = require('../../database/memory')
 const app = require('../../app')
 const mail = require('../../mail')
+const client = require('../../database/redis')
 
 beforeAll(() => memoryDB.start(), config.get('timeout'))
-afterAll(() => memoryDB.stop())
+
+afterAll(async done => {
+  await memoryDB.stop()
+  await client.end(false)
+  done()
+})
 
 describe('POST /api/users', () => {
   const person = {

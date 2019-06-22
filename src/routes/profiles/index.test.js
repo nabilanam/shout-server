@@ -6,6 +6,7 @@ const jsonwebtoken = require('jsonwebtoken')
 const app = require('../../app')
 const memoryDB = require('../../database/memory')
 const User = require('../../models/User')
+const client = require('../../database/redis')
 
 let user = null
 let token = null
@@ -29,7 +30,12 @@ beforeAll(
     ),
   config.get('timeout')
 )
-afterAll(() => memoryDB.stop())
+
+afterAll(async done => {
+  await memoryDB.stop()
+  await client.end(false)
+  done()
+})
 
 describe('GET /api/profiles/', () => {
   test('should return {status: 200, data: profile} when /:username', () =>
