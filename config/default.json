@@ -7,6 +7,9 @@
   "jwt_expiry": "7d",
   "salt_rounds": 10,
   "feed_limit": 5,
+  "image_dimension": 256,
+  "image_directory": "./public/uploads/",
+  "image_max_filesize": 1048576,
   "validation": {
     "user": {
       "username": {

@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const { verify } = require('../../middlewares/auth')
+const { upload } = require('../../middlewares/profile')
 const controller = require('../../controllers/profile')
 const { bad_request } = require('../../controllers/response')
 
@@ -17,7 +18,7 @@ router.get('/:username', verify, (req, res) => {
     .catch(response => res.status(response.status).json(response))
 })
 
-router.post('/update', verify, (req, res) => {
+router.post('/update', upload, (req, res) => {
   const { username, password, email, bio, quote, social } = req.body
 
   return controller
