@@ -173,6 +173,53 @@ describe('feed controller -> get_posts', () => {
       }))
 })
 
+// get_user_posts
+describe('feed controller -> get_user_posts', () => {
+  let t_user
+  beforeAll(async done => {
+    t_user = await new User({
+      username: 'xyz',
+      email: 'xyz@xyz.com',
+      password: '123'
+    }).save()
+
+    await new Post({
+      user: t_user.id,
+      text: 'text text text'
+    }).save()
+
+    done()
+  })
+
+  test('should resolve Response with (200, feed) when (username, page = 1)', () =>
+    controller
+      .get_user_posts(t_user.id, 1)
+      .then(response => {
+        expect(response.status).toBe(200)
+        expect(response.data).toBeInstanceOf(Array)
+        expect(response.data.length).toBe(1)
+      })
+      .catch(response => expect(response).toBeUndefined()))
+
+  test('should reject ErrorResponse with (400, \'Invalid request\') when (username, page = 0)', () =>
+    controller
+      .get_user_posts(t_user.id, 0)
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
+
+  test('should reject ErrorResponse with (400, \'Invalid request\') when (undefined, page = 0)', () =>
+    controller
+      .get_user_posts(undefined, 0)
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
+})
+
 // get_post
 describe('feed controller -> get_post', () => {
   let user = null

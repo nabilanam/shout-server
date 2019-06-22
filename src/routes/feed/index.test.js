@@ -268,6 +268,83 @@ describe('GET /api/feed/all/:page', () => {
       .catch(error => expect(error).toBeUndefined()))
 })
 
+describe('GET /api/feed/user/:user_id/:page', () => {
+  beforeAll(() => new Post({ user: user.id, text: 'lorem ipsum' }).save())
+
+  afterAll(() => Post.deleteMany({}))
+
+  test('should return {status: 401, error: \'Authorization required\'} when no x-auth-token', () =>
+    request(app)
+      .get('/api/feed/user/' + user.id + '/1')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(401)
+        expect(error).toBe('Authorization required')
+      })
+      .catch(error => expect(error).toBeUndefined()))
+
+  test('should return {status: 400, error: \'invalid page number\'} when /:page is 0', () =>
+    request(app)
+      .get('/api/feed/user/' + user.id + '/0')
+      .set('Accept', 'application/json')
+      .set('x-auth-token', token)
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(400)
+        expect(error).toBe('invalid page number')
+      })
+      .catch(error => expect(error).toBeUndefined()))
+
+  test('should return {status: 400, error: \'invalid page number\'} when invalid /:page', () =>
+    request(app)
+      .get('/api/feed/user/' + user.id + '/1a')
+      .set('Accept', 'application/json')
+      .set('x-auth-token', token)
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(400)
+        expect(error).toBe('invalid page number')
+      })
+      .catch(error => expect(error).toBeUndefined()))
+
+  test('should return {status: 500, error: \'Internal server error\'} when invalid /:user_id', () =>
+    request(app)
+      .get('/api/feed/user/123/1')
+      .set('Accept', 'application/json')
+      .set('x-auth-token', token)
+      .expect('Content-Type', /json/)
+      .expect(500)
+      .then(res => {
+        const { status, error } = res.body
+        expect(status).toBe(500)
+        expect(error).toBe('Internal server error')
+      })
+      .catch(error => expect(error).toBeUndefined()))
+
+  test('should return {status: 200, data: [post]} when /:page', () =>
+    request(app)
+      .get('/api/feed/user/' + user.id + '/1')
+      .set('Accept', 'application/json')
+      .set('x-auth-token', token)
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(res => {
+        const { status, data } = res.body
+        expect(status).toBe(200)
+        expect(data).toBeInstanceOf(Array)
+        expect(data.length).toBe(1)
+        expect(data[0].user._id).toBe(user.id)
+      })
+      .catch(error => expect(error).toBeUndefined()))
+})
+
 describe('DELETE /api/feed/:post_id', () => {
   let post = null
   beforeAll(() =>

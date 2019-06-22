@@ -96,6 +96,19 @@ const get_posts = page => {
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
+const get_user_posts = (user_id, page) => {
+  if (!user_id || !page || page < 0)
+    return Promise.reject(response.bad_request())
+
+  return Post.find({ user: user_id })
+    .sort({ created_at: -1 })
+    .skip(feed_limit * (page - 1))
+    .limit(feed_limit)
+    .populate([pop_user, pop_likes, pop_comments])
+    .then(posts => response.ok(posts))
+    .catch(() => Promise.reject(response.internal_server_error()))
+}
+
 const like = async (user_id, post_id) => {
   if (!(user_id && post_id)) return Promise.reject(response.bad_request())
 
@@ -176,6 +189,7 @@ module.exports = {
   add_post,
   update_post,
   get_posts,
+  get_user_posts,
   get_post,
   remove_post,
   like,
