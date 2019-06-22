@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+const config = require('config')
 const User = require('../../models/User')
 const response = require('../response')
 
@@ -15,6 +18,20 @@ const get = username => {
     .catch(() => {
       throw response.not_found('User not found')
     })
+}
+
+const get_picture = user_id => {
+  if (!user_id) return Promise.reject(response.internal_server_error())
+
+  const file_path = path.resolve(
+    path.join(config.get('image_directory'), user_id)
+  )
+
+  if (fs.existsSync(file_path)) {
+    return Promise.resolve(response.ok(file_path))
+  }
+
+  return Promise.resolve(response.ok(path.resolve(config.get('image_default'))))
 }
 
 const update = (user, username, password, email, bio, quote, social) => {
@@ -52,5 +69,6 @@ const update = (user, username, password, email, bio, quote, social) => {
 
 module.exports = {
   get,
+  get_picture,
   update
 }

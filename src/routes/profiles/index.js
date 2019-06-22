@@ -18,6 +18,13 @@ router.get('/:username', verify, (req, res) => {
     .catch(response => res.status(response.status).json(response))
 })
 
+router.get('/:user_id/picture', verify, (req, res) =>
+  controller
+    .get_picture(req.params.user_id)
+    .then(response => res.contentType('image/png').sendFile(response.data))
+    .catch(response => res.status(response.status).json(response))
+)
+
 router.post('/update', upload, (req, res) => {
   const { username, password, email, bio, quote, social } = req.body
 
