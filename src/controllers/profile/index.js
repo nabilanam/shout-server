@@ -9,7 +9,7 @@ const get = username => {
 
   return User.findOne({ username })
     .select(
-      '-_id -__v -auth_key -password -created_at -updated_at -is_authenticated'
+      '-__v -auth_key -password -created_at -updated_at -is_authenticated'
     )
     .then(user => {
       if (!user) throw new Error()
