@@ -1,35 +1,29 @@
+const config = require('config')
 const jsonwebtoken = require('jsonwebtoken')
 const http_status = require('http-status-codes')
-const client = require('../../database/redis')
 const { check, validationResult } = require('express-validator/check')
-const { username, password } = require('config').get('validation.user')
-const jwt_secret = require('config').get('jwt_secret')
 const User = require('../../models/User')
+const client = require('../../database/redis')
 const response = require('../../controllers/response')
 const ValidatorResponse = require('../../response/ValidatorResponse')
+
+const jwt_secret = config.get('jwt_secret')
+const { username, password } = config.get('validation.user')
 
 const verify = async (req, res, next) => {
   const token = req.header('x-auth-token')
   const unauthorized = response.unauthorized()
-
-  client.get(token, async (error, value) => {
-    if (!error && value === 'true') {
-      return res.status(unauthorized.status).json(unauthorized)
-    }
-
-    try {
+  return client
+    .getAsync(token)
+    .then(async value => {
+      if (value === 'true') throw new Error()
       const decoded = jsonwebtoken.verify(token, jwt_secret)
       const user = await User.findById(decoded.id)
-
-      if (!user.is_authenticated)
-        return res.status(unauthorized.status).json(unauthorized)
-
+      if (!user.is_authenticated) throw new Error()
       req.user = user
       next()
-    } catch (err) {
-      res.status(unauthorized.status).json(unauthorized)
-    }
-  })
+    })
+    .catch(() => res.status(unauthorized.status).json(unauthorized))
 }
 
 const login = [
