@@ -46,6 +46,7 @@
     "jest": "^24.8.0",
     "mongodb-memory-server": "^5.1.2",
     "nodemon": "^1.19.0",
+    "redis-mock": "^0.44.0",
     "supertest": "^4.0.2"
   }
 }
