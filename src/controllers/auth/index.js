@@ -8,7 +8,7 @@ const confirm_email = auth_key =>
     if (auth_key)
       return User.findOneAndUpdate(
         { auth_key },
-        { is_authenticated: true }
+        { auth_key: '', is_authenticated: true }
       ).then(user =>
         user
           ? resolve(response.login_token(user.id))
