@@ -1,8 +1,12 @@
-const feed_limit = require('config').get('feed_limit')
+const config = require('config')
 const Post = require('../../models/Post')
 const Like = require('../../models/Like')
 const Comment = require('../../models/Comment')
 const response = require('../response')
+
+const feed_limit = config.get('feed_limit')
+const like_limit = config.get('like_limit')
+const comment_limit = config.get('comment_limit')
 
 const pop_user = {
   path: 'user',
@@ -38,11 +42,7 @@ const update_post = async (user_id, post_id, text) => {
   if (!(user_id && post_id && text && (text = text.trim())))
     return Promise.reject(response.bad_request())
 
-  const post = await Post.findById(post_id).populate([
-    pop_user,
-    pop_likes,
-    pop_comments
-  ])
+  const post = await Post.findById(post_id).populate(pop_user)
 
   if (!post) return Promise.reject(response.not_found())
   if (post.user.id !== user_id) return Promise.reject(response.access_denied())
@@ -59,7 +59,7 @@ const get_post = async post_id => {
   if (!post_id) return Promise.reject(response.bad_request())
 
   return Post.findById(post_id)
-    .populate([pop_user, pop_likes, pop_comments])
+    .populate(pop_user)
     .then(post => {
       if (!post) throw new Error()
       return response.ok(post)
@@ -91,7 +91,7 @@ const get_posts = page => {
     .sort({ created_at: -1 })
     .skip(feed_limit * (page - 1))
     .limit(feed_limit)
-    .populate([pop_user, pop_likes, pop_comments])
+    .populate(pop_user)
     .then(posts => response.ok(posts))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
@@ -104,7 +104,7 @@ const get_user_posts = (user_id, page) => {
     .sort({ created_at: -1 })
     .skip(feed_limit * (page - 1))
     .limit(feed_limit)
-    .populate([pop_user, pop_likes, pop_comments])
+    .populate(pop_user)
     .then(posts => response.ok(posts))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
@@ -126,6 +126,18 @@ const like = async (user_id, post_id) => {
     .populate(pop_likes)
     .then(post => response.ok(post.likes))
     .catch(() => Promise.reject(response.not_found()))
+}
+
+const get_likes = (post_id, page) => {
+  if (!page || page < 0) return Promise.reject(response.bad_request())
+
+  return Like.find({ post: post_id })
+    .sort({ created_at: -1 })
+    .skip(like_limit * (page - 1))
+    .limit(like_limit)
+    .populate(pop_user)
+    .then(posts => response.ok(posts))
+    .catch(() => Promise.reject(response.internal_server_error()))
 }
 
 const add_comment = async (user_id, post_id, text) => {
@@ -167,6 +179,18 @@ const update_comment = async (user_id, post_id, comment_id, text) => {
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
+const get_comments = (post_id, page) => {
+  if (!page || page < 0) return Promise.reject(response.bad_request())
+
+  return Comment.find({ post: post_id })
+    .sort({ created_at: -1 })
+    .skip(comment_limit * (page - 1))
+    .limit(comment_limit)
+    .populate(pop_user)
+    .then(posts => response.ok(posts))
+    .catch(() => Promise.reject(response.internal_server_error()))
+}
+
 const remove_comment = async (user_id, post_id, comment_id) => {
   if (!(user_id && post_id && comment_id))
     return Promise.reject(response.bad_request())
@@ -193,7 +217,9 @@ module.exports = {
   get_post,
   remove_post,
   like,
+  get_likes,
   add_comment,
   update_comment,
+  get_comments,
   remove_comment
 }

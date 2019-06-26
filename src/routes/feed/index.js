@@ -23,6 +23,20 @@ router.get('/:post_id', middleware.post_get, (req, res) =>
     .catch(response => res.status(response.status).json(response))
 )
 
+router.get('/:post_id/likes/:page', middleware.likes_get, (req, res) =>
+  controller
+    .get_likes(req.params.post_id, req.params.page)
+    .then(response => res.status(response.status).json(response))
+    .catch(response => res.status(response.status).json(response))
+)
+
+router.get('/:post_id/comments/:page', middleware.comments_get, (req, res) =>
+  controller
+    .get_comments(req.params.post_id, req.params.page)
+    .then(response => res.status(response.status).json(response))
+    .catch(response => res.status(response.status).json(response))
+)
+
 router.get('/all/:page', middleware.posts_get, (req, res) =>
   controller
     .get_posts(req.params.page)

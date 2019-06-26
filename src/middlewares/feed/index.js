@@ -97,6 +97,21 @@ const like = [
   (req, res, next) => check_validation_result(req, res, next)
 ]
 
+const likes_get = [
+  verify,
+  param('post_id')
+    .exists()
+    .custom(id => ObjectId.isValid(id))
+    .withMessage('invalid post_id'),
+  param('page')
+    .exists()
+    .isNumeric()
+    .withMessage('invalid page number')
+    .custom(page => page > 0)
+    .withMessage('invalid page number'),
+  (req, res, next) => check_validation_result(req, res, next)
+]
+
 const comment_add = [
   verify,
   param('post_id')
@@ -165,7 +180,9 @@ module.exports = {
   posts_get,
   post_remove,
   like,
+  likes_get,
   comment_add,
   comment_update,
+  comments_get: likes_get,
   comment_remove
 }
