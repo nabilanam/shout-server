@@ -4,15 +4,32 @@ const config = require('config')
 const User = require('../../models/User')
 const response = require('../response')
 
-const get = username => {
+const selector =
+  '-__v -auth_key -password -created_at -updated_at -is_authenticated'
+
+const getByUsername = (username, selfUserId) => {
   if (!username) return Promise.reject(response.internal_server_error())
 
   return User.findOne({ username })
-    .select(
-      '-__v -auth_key -password -created_at -updated_at -is_authenticated'
-    )
+    .select(selector)
     .then(user => {
       if (!user) throw new Error()
+      if (user.id !== selfUserId) user._doc.email = undefined
+      return response.ok(user)
+    })
+    .catch(() => {
+      throw response.not_found('User not found')
+    })
+}
+
+const getByUserId = (userId, selfUserId) => {
+  if (!userId) return Promise.reject(response.internal_server_error())
+
+  return User.findById(userId)
+    .select(selector)
+    .then(user => {
+      if (!user) throw new Error()
+      if (user.id !== selfUserId) user._doc.email = undefined
       return response.ok(user)
     })
     .catch(() => {
@@ -68,7 +85,8 @@ const update = (user, username, password, email, bio, quote, social) => {
 }
 
 module.exports = {
-  get,
+  get: getByUsername,
+  getByUserId,
   get_picture,
   update
 }

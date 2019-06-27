@@ -13,7 +13,14 @@ router.get('/:username', verify, (req, res) => {
   const username = req.params.username
 
   return controller
-    .get(username)
+    .get(username, req.user.id)
+    .then(response => res.status(response.status).json(response))
+    .catch(response => res.status(response.status).json(response))
+})
+
+router.get('/id/:userId', verify, (req, res) => {
+  return controller
+    .getByUserId(req.params.userId, req.user.id)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 })

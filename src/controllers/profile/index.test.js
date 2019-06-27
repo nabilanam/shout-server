@@ -17,7 +17,7 @@ describe('profile controller -> get', () => {
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data.username).toBe('abc')
-        expect(response.data.email).toBe('abc@abc.com')
+        expect(response.data.email).toBeUndefined()
         expect(response.data.__v).toBeUndefined()
         expect(response.data.password).toBeUndefined()
         expect(response.data.auth_key).toBeUndefined()
