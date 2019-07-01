@@ -33,10 +33,29 @@ router.get('/:user_id/picture', verify, (req, res) =>
 )
 
 router.post('/update', upload, (req, res) => {
-  const { username, password, email, bio, quote, social } = req.body
+  const {
+    username,
+    firstname,
+    lastname,
+    password,
+    email,
+    bio,
+    quote,
+    social
+  } = req.body
 
   return controller
-    .update(req.user, username, password, email, bio, quote, social)
+    .update(
+      req.user,
+      username,
+      firstname,
+      lastname,
+      password,
+      email,
+      bio,
+      quote,
+      social
+    )
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 })
