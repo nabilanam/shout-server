@@ -78,7 +78,7 @@ describe('profile controller -> update', () => {
       })
       .catch(response => expect(response).toBeUndefined()))
 
-  test('should resolve Response with (200, "Check email address") when (user)', () => {
+  test('should resolve Response with (200, "Check email address") when (user, email)', () => {
     const nodemailer = require('nodemailer')
     const sendMail_mock = jest.fn().mockResolvedValue()
     const createTransport_mock = jest
@@ -88,7 +88,7 @@ describe('profile controller -> update', () => {
       })
 
     return controller
-      .update(user, undefined, undefined, 'mmo@mmo.com')
+      .update(user, undefined, undefined, undefined, undefined, 'mmo@mmo.com')
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data).toBe('Check email address')

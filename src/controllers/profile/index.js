@@ -51,10 +51,22 @@ const get_picture = user_id => {
   return Promise.resolve(response.ok(path.resolve(config.get('image_default'))))
 }
 
-const update = (user, username, password, email, bio, quote, social) => {
+const update = (
+  user,
+  username,
+  firstname,
+  lastname,
+  password,
+  email,
+  bio,
+  quote,
+  social
+) => {
   if (!user) return Promise.reject(response.internal_server_error())
 
   if (username) user.username = username
+  if (firstname) user.firstname = firstname
+  if (lastname) user.lastname = lastname
   if (password) user.password = password
   if (email && email !== user.email) {
     user.email = email
