@@ -11,8 +11,6 @@ afterAll(() => memoryDB.stop())
 describe('Post model', () => {
   let user = null
   let post = null
-  let like = null
-  let comment = null
 
   beforeAll(async done => {
     user = await new User({
@@ -26,12 +24,12 @@ describe('Post model', () => {
       text: 'lorem'
     }).save()
 
-    like = await new Like({
+    await new Like({
       user: user.id,
       post: post.id
     }).save()
 
-    comment = await new Comment({
+    await new Comment({
       user: user.id,
       post: post.id,
       text: 'ipsum'
@@ -60,43 +58,27 @@ describe('Post model', () => {
       .then(p => expect(p.user.username).toBe('abc'))
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should insert like when findByIdAndUpdate with (like)', () =>
-    Post.findByIdAndUpdate(
-      post.id,
-      { $push: { likes: like.id } },
-      { new: true }
-    )
-      .then(p => expect(p.likes[0].toString()).toBe(like.id.toString()))
+  test('should increment likes when findByIdAndUpdate with (like)', () =>
+    Post.findByIdAndUpdate(post.id, { $inc: { likes: 1 } }, { new: true })
+      .then(p => expect(p.likes).toBe(1))
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should remove like when findByIdAndUpdate with (like)', () =>
-    Post.findByIdAndUpdate(
-      post.id,
-      { $pull: { likes: like.id } },
-      { new: true }
-    )
-      .then(p => expect(p.likes.length).toBe(0))
+  test('should decrement likes when findByIdAndUpdate with (like)', () =>
+    Post.findByIdAndUpdate(post.id, { $inc: { likes: -1 } }, { new: true })
+      .then(p => expect(p.likes).toBe(0))
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should insert comment when findByIdAndUpdate with (comment)', () =>
-    Post.findByIdAndUpdate(
-      post.id,
-      { $push: { comments: comment } },
-      { new: true }
-    )
+  test('should increment comments when findByIdAndUpdate with (comment)', () =>
+    Post.findByIdAndUpdate(post.id, { $inc: { comments: 1 } }, { new: true })
       .then(p => {
-        expect(p.comments.length).toBe(1)
+        expect(p.comments).toBe(1)
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should remove comment when findByIdAndUpdate with (comment)', () =>
-    Post.findByIdAndUpdate(
-      post.id,
-      { $pull: { comments: comment.id } },
-      { new: true }
-    )
+  test('should decrement comments when findByIdAndUpdate with (comment)', () =>
+    Post.findByIdAndUpdate(post.id, { $inc: { comments: -1 } }, { new: true })
       .then(p => {
-        expect(p.comments.length).toBe(0)
+        expect(p.comments).toBe(0)
       })
       .catch(error => expect(error).toBeUndefined()))
 

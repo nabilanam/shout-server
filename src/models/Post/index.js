@@ -14,8 +14,14 @@ const schema = new Schema({
     type: String,
     required: true
   },
-  likes: [{ type: Schema.Types.ObjectId, ref: 'like' }],
-  comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
+  likes: {
+    type: Number,
+    default: 0
+  },
+  comments: {
+    type: Number,
+    default: 0
+  },
   created_at,
   updated_at
 })
@@ -26,8 +32,8 @@ schema.pre('save', function(next) {
 })
 
 schema.pre('remove', async function(next) {
-  for (const like of this.likes) await Like.deleteOne({ _id: like })
-  for (const comment of this.comments) await Comment.deleteOne({ _id: comment })
+  await Like.deleteMany({ _id: this._id })
+  await Comment.deleteMany({ _id: this._id })
   next()
 })
 
