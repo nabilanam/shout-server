@@ -7,10 +7,10 @@
     "dev": "nodemon",
     "prod": "export NODE_ENV=production&& nodemon",
     "lint": "eslint ./",
-    "test": "jest || exit 0",
-    "test:cov": "jest --coverage || true",
-    "test:verb": "jest --verbose || true",
-    "test:coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
+    "test": "jest --clearCache && jest || exit 0",
+    "test:cov": "jest --clearCache && jest --coverage || true",
+    "test:verb": "jest --clearCache && jest --verbose || true",
+    "test:coveralls": "jest --clearCache && jest --coverage --coverageReporters=text-lcov | coveralls"
   },
   "keywords": [],
   "author": "nabilanam",
