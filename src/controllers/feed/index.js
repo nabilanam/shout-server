@@ -10,32 +10,33 @@ const comment_limit = config.get('comment_limit')
 
 const pop_user = {
   path: 'user',
-  select: 'firstname lastname username picture'
+  select: 'firstname lastname username'
 }
 
-const pop_likes = {
-  path: 'likes',
-  populate: pop_user,
-  options: { sort: { created_at: -1 } }
-}
-
-const pop_comments = {
-  path: 'comments',
-  populate: pop_user,
-  options: { sort: { created_at: -1 } }
-}
-
-const add_post = (user_id, text) => {
+const add_post = async (user_id, text) => {
   if (!(user_id && text && (text = text.trim())))
     return Promise.reject(response.bad_request())
 
-  return new Post({
+  const post = await new Post({
     user: user_id,
     text
-  })
-    .save()
-    .then(post => response.ok(post))
+  }).save()
+
+  return Post.findById(post.id)
+    .populate(pop_user)
+    .then(post => {
+      post._doc.isLiked = false
+      return response.ok(post)
+    })
     .catch(() => Promise.reject(response.internal_server_error()))
+}
+
+const querPostLike = async (user_id, post) => {
+  post._doc.isLiked = !!(await Like.findOne({
+    user: user_id,
+    post: post.id
+  }))
+  return post
 }
 
 const update_post = async (user_id, post_id, text) => {
@@ -51,17 +52,21 @@ const update_post = async (user_id, post_id, text) => {
 
   return post
     .save()
-    .then(post => response.ok(post))
+    .then(async post => {
+      post = await querPostLike(user_id, post)
+      return response.ok(post)
+    })
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
-const get_post = async post_id => {
-  if (!post_id) return Promise.reject(response.bad_request())
+const get_post = (user_id, post_id) => {
+  if (!(user_id && post_id)) return Promise.reject(response.bad_request())
 
   return Post.findById(post_id)
     .populate(pop_user)
-    .then(post => {
+    .then(async post => {
       if (!post) throw new Error()
+      post = await querPostLike(user_id, post)
       return response.ok(post)
     })
     .catch(() => Promise.reject(response.not_found()))
@@ -84,7 +89,17 @@ const remove_post = async (user_id, post_id) => {
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
-const get_posts = page => {
+const queryPostslike = async (user_id, posts) => {
+  for (let post of posts) {
+    post._doc.isLiked = !!(await Like.findOne({
+      user: user_id,
+      post: post.id
+    }))
+  }
+  return posts
+}
+
+const get_posts = (user_id, page) => {
   if (!page || page < 0) return Promise.reject(response.bad_request())
 
   return Post.find()
@@ -92,11 +107,14 @@ const get_posts = page => {
     .skip(feed_limit * (page - 1))
     .limit(feed_limit)
     .populate(pop_user)
-    .then(posts => response.ok(posts))
+    .then(async posts => {
+      posts = await queryPostslike(user_id, posts)
+      return response.ok(posts)
+    })
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
-const get_user_posts = (user_id, page) => {
+const get_user_posts = async (current_user_id, user_id, page) => {
   if (!user_id || !page || page < 0)
     return Promise.reject(response.bad_request())
 
@@ -105,26 +123,30 @@ const get_user_posts = (user_id, page) => {
     .skip(feed_limit * (page - 1))
     .limit(feed_limit)
     .populate(pop_user)
-    .then(posts => response.ok(posts))
+    .then(async posts => {
+      posts = await queryPostslike(current_user_id, posts)
+      return response.ok(posts)
+    })
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
 const like = async (user_id, post_id) => {
   if (!(user_id && post_id)) return Promise.reject(response.bad_request())
 
-  let like = await Like.findOne({ user: user_id, post: post_id })
+  const like = await Like.findOne({ user: user_id, post: post_id })
 
-  like = like
+  const previouslyLiked = !!like
+
+  previouslyLiked
     ? await like.remove()
     : await new Like({ user: user_id, post: post_id }).save()
 
   return Post.findByIdAndUpdate(
     post_id,
-    { $addToSet: { likes: like } },
+    { $inc: { likes: previouslyLiked ? -1 : 1 } },
     { new: true }
   )
-    .populate(pop_likes)
-    .then(post => response.ok(post.likes))
+    .then(post => response.ok({ isLiked: !previouslyLiked, count: post.likes }))
     .catch(() => Promise.reject(response.not_found()))
 }
 
@@ -132,11 +154,11 @@ const get_likes = (post_id, page) => {
   if (!page || page < 0) return Promise.reject(response.bad_request())
 
   return Like.find({ post: post_id })
-    .sort({ created_at: -1 })
+    .sort({ created_at: 1 })
     .skip(like_limit * (page - 1))
     .limit(like_limit)
     .populate(pop_user)
-    .then(posts => response.ok(posts))
+    .then(likes => response.ok(likes))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
@@ -144,19 +166,20 @@ const add_comment = async (user_id, post_id, text) => {
   if (!(user_id && post_id && text && (text = text.trim())))
     return Promise.reject(response.bad_request())
 
-  const comment = await new Comment({
+  let comment = await new Comment({
     user: user_id,
     post: post_id,
     text
   }).save()
 
+  comment = await Comment.findById(comment.id).populate(pop_user)
+
   return Post.findByIdAndUpdate(
     post_id,
-    { $push: { comments: comment.id } },
+    { $inc: { comments: 1 } },
     { new: true }
   )
-    .populate(pop_comments)
-    .then(post => response.ok(post.comments))
+    .then(post => response.ok({ comment, count: post.comments }))
     .catch(() => Promise.reject(response.not_found()))
 }
 
@@ -164,18 +187,17 @@ const update_comment = async (user_id, post_id, comment_id, text) => {
   if (!(user_id && post_id && comment_id && text && (text = text.trim())))
     return Promise.reject(response.bad_request())
 
-  const comment = await Comment.findById(comment_id)
+  const comment = await Comment.findById(comment_id).populate(pop_user)
 
   if (!comment) return Promise.reject(response.not_found())
-  else if (comment.user != user_id || comment.post != post_id)
+  else if (comment.user.id != user_id || comment.post != post_id)
     return Promise.reject(response.access_denied())
 
   comment.text = text
   await comment.save()
 
   return Post.findById(post_id)
-    .populate(pop_comments)
-    .then(post => response.ok(post.comments))
+    .then(post => response.ok({ comment, count: post.comments }))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
@@ -187,7 +209,7 @@ const get_comments = (post_id, page) => {
     .skip(comment_limit * (page - 1))
     .limit(comment_limit)
     .populate(pop_user)
-    .then(posts => response.ok(posts))
+    .then(comments => response.ok(comments))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
@@ -203,9 +225,12 @@ const remove_comment = async (user_id, post_id, comment_id) => {
 
   await comment.remove()
 
-  return Post.findByIdAndUpdate(post_id, { $pull: { comments: comment.id } })
-    .populate(pop_comments)
-    .then(post => response.ok(post.comments))
+  return Post.findByIdAndUpdate(
+    post_id,
+    { $inc: { comments: -1 } },
+    { new: true }
+  )
+    .then(post => response.ok({ count: post.comments }))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 

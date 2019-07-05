@@ -77,7 +77,7 @@ describe('POST /api/feed/', () => {
         const { status, data } = res.body
         expect(status).toBe(200)
         expect(data.text).toBe('lorem ipsum')
-        expect(data.user).toBe(user.id)
+        expect(data.user._id).toBe(user.id)
       })
       .catch(error => expect(error).toBeUndefined()))
 })
@@ -434,7 +434,7 @@ describe('PUT /api/feed/:post_id/like', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 200, data: [likes]} when /:post_id/like', () =>
+  test('should return {status: 200, data: 1} when /:post_id/like', () =>
     request(app)
       .put('/api/feed/' + post.id + '/like')
       .set('Accept', 'application/json')
@@ -444,13 +444,11 @@ describe('PUT /api/feed/:post_id/like', () => {
       .then(res => {
         const { status, data } = res.body
         expect(status).toBe(200)
-        expect(data).toBeInstanceOf(Array)
-        expect(data.length).toBe(1)
-        expect(data[0].user._id).toBe(user.id)
+        expect(data.count).toBe(1)
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 200, data: []} when same /:post_id/like', () =>
+  test('should return {status: 200, data: 0} when same /:post_id/like', () =>
     request(app)
       .put('/api/feed/' + post.id + '/like')
       .set('Accept', 'application/json')
@@ -460,8 +458,7 @@ describe('PUT /api/feed/:post_id/like', () => {
       .then(res => {
         const { status, data } = res.body
         expect(status).toBe(200)
-        expect(data).toBeInstanceOf(Array)
-        expect(data.length).toBe(0)
+        expect(data.count).toBe(0)
       })
       .catch(error => expect(error).toBeUndefined()))
 })
@@ -519,7 +516,7 @@ describe('POST /api/feed/:post_id/comment', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 200, data: [comment]} when {text: \'lorem ipsum\'}', () =>
+  test('should return {status: 200, data: {count: 1}} when {text: \'lorem ipsum\'}', () =>
     request(app)
       .post('/api/feed/' + post.id + '/comment')
       .set('Accept', 'application/json')
@@ -530,9 +527,7 @@ describe('POST /api/feed/:post_id/comment', () => {
       .then(res => {
         const { status, data } = res.body
         expect(status).toBe(200)
-        expect(data).toBeInstanceOf(Array)
-        expect(data[0].text).toBe('lorem ipsum')
-        expect(data[0].user._id).toBe(user.id)
+        expect(data.count).toBe(1)
       })
       .catch(error => expect(error).toBeUndefined()))
 })
@@ -542,15 +537,17 @@ describe('PUT /api/feed/:post_id/comment/:comment_id', () => {
   let comment = null
 
   beforeAll(async done => {
-    post = await new Post({ user: user.id, text: 'lorem ipsum' }).save()
+    post = await new Post({
+      user: user.id,
+      text: 'lorem ipsum',
+      comments: 1
+    }).save()
 
     comment = await new Comment({
       user: user.id,
       post: post.id,
       text: 'lorem ipsum'
     }).save()
-
-    post.comments.push(comment.id)
 
     await post.save()
 
@@ -617,7 +614,7 @@ describe('PUT /api/feed/:post_id/comment/:comment_id', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 200, data: [comment]} when /:post_id/comment/:comment_id with {text: \'dolor sit amet\'}', () =>
+  test('should return {status: 200, data: {count: 1}} when /:post_id/comment/:comment_id with {text: \'dolor sit amet\'}', () =>
     request(app)
       .put('/api/feed/' + post.id + '/comment/' + comment.id)
       .set('Accept', 'application/json')
@@ -628,9 +625,7 @@ describe('PUT /api/feed/:post_id/comment/:comment_id', () => {
       .then(res => {
         const { status, data } = res.body
         expect(status).toBe(200)
-        expect(data).toBeInstanceOf(Array)
-        expect(data[0].text).toBe('dolor sit amet')
-        expect(data[0].user._id).toBe(user.id)
+        expect(data.count).toBe(1)
       })
       .catch(error => expect(error).toBeUndefined()))
 })
@@ -640,15 +635,17 @@ describe('DELETE /api/feed/:post_id/comment/:comment_id', () => {
   let comment = null
 
   beforeAll(async done => {
-    post = await new Post({ user: user.id, text: 'lorem ipsum' }).save()
+    post = await new Post({
+      user: user.id,
+      text: 'lorem ipsum',
+      comments: 1
+    }).save()
 
     comment = await new Comment({
       user: user.id,
       post: post.id,
       text: 'lorem ipsum'
     }).save()
-
-    post.comments.push(comment.id)
 
     await post.save()
 
@@ -670,7 +667,7 @@ describe('DELETE /api/feed/:post_id/comment/:comment_id', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 200, data: [comment]} when /:post_id/comment/:comment_id with {text: \'dolor sit amet\'}', () =>
+  test('should return {status: 200, data: {count: 0}} when /:post_id/comment/:comment_id with {text: \'dolor sit amet\'}', () =>
     request(app)
       .delete('/api/feed/' + post.id + '/comment/' + comment.id)
       .set('Accept', 'application/json')
@@ -680,8 +677,7 @@ describe('DELETE /api/feed/:post_id/comment/:comment_id', () => {
       .then(res => {
         const { status, data } = res.body
         expect(status).toBe(200)
-        expect(data).toBeInstanceOf(Array)
-        expect(data.length).toBe(0)
+        expect(data.count).toBe(0)
       })
       .catch(error => expect(error).toBeUndefined()))
 })

@@ -18,7 +18,7 @@ router.put('/:post_id', middleware.post_update, (req, res) =>
 
 router.get('/:post_id', middleware.post_get, (req, res) =>
   controller
-    .get_post(req.params.post_id)
+    .get_post(req.user.id, req.params.post_id)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 )
@@ -39,14 +39,14 @@ router.get('/:post_id/comments/:page', middleware.comments_get, (req, res) =>
 
 router.get('/all/:page', middleware.posts_get, (req, res) =>
   controller
-    .get_posts(req.params.page)
+    .get_posts(req.user.id, req.params.page)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 )
 
 router.get('/user/:user_id/:page', middleware.posts_get, (req, res) =>
   controller
-    .get_user_posts(req.params.user_id, req.params.page)
+    .get_user_posts(req.user.id, req.params.user_id, req.params.page)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 )

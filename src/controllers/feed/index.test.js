@@ -29,7 +29,7 @@ describe('feed controller -> add_post', () => {
       .add_post(user.id, 'lorem ipsum')
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.user.toString()).toBe(user.id.toString())
+        expect(response.data.user._id.toString()).toBe(user.id.toString())
         expect(response.data.text).toBe('lorem ipsum')
       })
       .catch(response => expect(response).toBeUndefined()))
@@ -100,9 +100,8 @@ describe('feed controller -> update_post', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
-    await other_user.remove()
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
@@ -154,18 +153,44 @@ describe('feed controller -> update_post', () => {
 
 // get_posts
 describe('feed controller -> get_posts', () => {
-  test('should resolve Response with (200, feed) when (page = 1)', () =>
+  let user = null
+
+  beforeAll(async done => {
+    user = await new User({
+      username: 'abc',
+      email: 'abc@abc.com',
+      password: '123'
+    }).save()
+
+    done()
+  })
+
+  afterAll(async done => {
+    await User.deleteMany({})
+    done()
+  })
+
+  test('should resolve Response with (200, feed) when (user_id, page = 1)', () =>
     controller
-      .get_posts(1)
+      .get_posts(user.id, 1)
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data).toBeInstanceOf(Array)
       })
       .catch(response => expect(response).toBeUndefined()))
 
-  test('should reject ErrorResponse with (400, \'Invalid request\') when (page = 0)', () =>
+  test('should reject ErrorResponse with (400, \'Invalid request\') when (user_id)', () =>
     controller
-      .get_posts(0)
+      .get_posts(user.id)
+      .then(response => expect(response).toBeUndefined())
+      .catch(response => {
+        expect(response.status).toBe(400)
+        expect(response.error).toBe('Invalid request')
+      }))
+
+  test('should reject ErrorResponse with (400, \'Invalid request\') when (user_id, page = 0)', () =>
+    controller
+      .get_posts(user.id, 0)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
@@ -175,25 +200,25 @@ describe('feed controller -> get_posts', () => {
 
 // get_user_posts
 describe('feed controller -> get_user_posts', () => {
-  let t_user
+  let user
   beforeAll(async done => {
-    t_user = await new User({
+    user = await new User({
       username: 'xyz',
       email: 'xyz@xyz.com',
       password: '123'
     }).save()
 
     await new Post({
-      user: t_user.id,
+      user: user.id,
       text: 'text text text'
     }).save()
 
     done()
   })
 
-  test('should resolve Response with (200, feed) when (username, page = 1)', () =>
+  test('should resolve Response with (200, feed) when (user_id, user_id, page = 1)', () =>
     controller
-      .get_user_posts(t_user.id, 1)
+      .get_user_posts(user.id, user.id, 1)
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data).toBeInstanceOf(Array)
@@ -201,18 +226,18 @@ describe('feed controller -> get_user_posts', () => {
       })
       .catch(response => expect(response).toBeUndefined()))
 
-  test('should reject ErrorResponse with (400, \'Invalid request\') when (username, page = 0)', () =>
+  test('should reject ErrorResponse with (400, \'Invalid request\') when (user_id, user_id, page = 0)', () =>
     controller
-      .get_user_posts(t_user.id, 0)
+      .get_user_posts(user.id, user.id, 0)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
         expect(response.error).toBe('Invalid request')
       }))
 
-  test('should reject ErrorResponse with (400, \'Invalid request\') when (undefined, page = 0)', () =>
+  test('should reject ErrorResponse with (400, \'Invalid request\') when (user_id)', () =>
     controller
-      .get_user_posts(undefined, 0)
+      .get_user_posts(user.id)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
@@ -241,23 +266,23 @@ describe('feed controller -> get_post', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
-  test('should resolve Response with (200, post) when (post_id)', () =>
+  test('should resolve Response with (200, post) when (user_id, post_id)', () =>
     controller
-      .get_post(post.id)
+      .get_post(user.id, post.id)
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data._id.toString()).toBe(post.id)
       })
       .catch(response => expect(response).toBeUndefined()))
 
-  test('should reject ErrorResponse with (404, \'Not found\') when (invalid post_id)', () =>
+  test('should reject ErrorResponse with (404, \'Not found\') when (user_id, invalid post_id)', () =>
     controller
-      .get_post(12345)
+      .get_post(user.id, 12345)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(404)
@@ -279,7 +304,6 @@ describe('feed controller -> remove_post', () => {
   let user = null
   let other_user = null
   let post = null
-  let comment = null
   let removed_id = null
 
   beforeAll(async done => {
@@ -300,7 +324,7 @@ describe('feed controller -> remove_post', () => {
       text: 'text text text'
     }).save()
 
-    comment = await new Comment({
+    await new Comment({
       user: user.id,
       post: post.id,
       text: 'lipsum ipsum'
@@ -319,10 +343,8 @@ describe('feed controller -> remove_post', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
-    await comment.remove()
-    await other_user.remove()
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
@@ -412,29 +434,30 @@ describe('feed controller -> like', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
-  test('should resolve Response with (200, likes) when (user_id, post_id)', () =>
+  test('should resolve Response with (200, {isLiked:true, count:1}) when (user_id, post_id)', () =>
     controller
       .like(user.id, post.id)
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.length).toBe(1)
-        expect(response.data[0].user.username).toBe(user.username)
+        expect(response.data.isLiked).toBe(true)
+        expect(response.data.count).toBe(1)
       })
       .catch(response => {
         expect(response).toBeUndefined()
       }))
 
-  test('should resolve Response with (200, empty likes) when same (user_id, post_id)', () =>
+  test('should resolve Response with (200, {isLiked:false, count:0}) when same (user_id, post_id)', () =>
     controller
       .like(user.id, post.id)
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.length).toBe(0)
+        expect(response.data.isLiked).toBe(false)
+        expect(response.data.count).toBe(0)
       })
       .catch(response => {
         expect(response).toBeUndefined()
@@ -508,19 +531,17 @@ describe('feed controller -> add_comment', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
-    await Comment.deleteMany({})
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
-  test('should resolve Response with (200, comments) when (user_id, post_id, text)', () =>
+  test('should resolve Response with (200, {comment, count: 1}) when (user_id, post_id, text)', () =>
     controller
       .add_comment(user.id, post.id, 'dolor sit amet')
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.length).toBe(1)
-        expect(response.data[0].user.username).toBe(user.username)
+        expect(response.data.count).toBe(1)
       })
       .catch(response => {
         expect(response).toBeUndefined()
@@ -596,8 +617,7 @@ describe('feed controller -> update_comment', () => {
       text: 'lipsum ipsum'
     }).save()
 
-    post.comments = []
-    post.comments.push(comment)
+    post.comments = 1
     await post.save()
 
     const post2 = await new Post({
@@ -613,21 +633,17 @@ describe('feed controller -> update_comment', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
-    await comment.remove()
-    await other_user.remove()
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
-  test('should resolve Response with (200, comments) when (user_id, post_id, comment_id, text)', () =>
+  test('should resolve Response with (200, {count: 1}) when (user_id, post_id, comment_id, text)', () =>
     controller
       .update_comment(user.id, post.id, comment.id, 'omini domini')
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.length).toBe(1)
-        expect(response.data[0].text).toBe('omini domini')
-        expect(response.data[0].user.username).toBe(user.username)
+        expect(response.data.count).toBe(1)
       })
       .catch(response => expect(response).toBeUndefined()))
 
@@ -718,7 +734,8 @@ describe('feed controller -> remove_comment', () => {
 
     post = await new Post({
       user: user.id,
-      text: 'text text text'
+      text: 'text text text',
+      comments: 1
     }).save()
 
     comment = await new Comment({
@@ -741,10 +758,8 @@ describe('feed controller -> remove_comment', () => {
   })
 
   afterAll(async done => {
-    await user.remove()
-    await post.remove()
-    await comment.remove()
-    await other_user.remove()
+    await User.deleteMany({})
+    await Post.deleteMany({})
     done()
   })
 
@@ -802,12 +817,12 @@ describe('feed controller -> remove_comment', () => {
         expect(response.error).toBe('Invalid request')
       }))
 
-  test('should resolve Response with (200, comments) when (user_id, post_id, comment_id)', () =>
+  test('should resolve Response with (200, {count: 0}) when (user_id, post_id, comment_id)', () =>
     controller
       .remove_comment(user.id, post.id, comment.id)
       .then(response => {
         expect(response.status).toBe(200)
-        expect(response.data.length).toBe(0)
+        expect(response.data.count).toBe(0)
       })
       .catch(response => expect(response).toBeUndefined()))
 })
