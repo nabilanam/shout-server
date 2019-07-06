@@ -44,9 +44,9 @@ router.get('/all/:page', middleware.posts_get, (req, res) =>
     .catch(response => res.status(response.status).json(response))
 )
 
-router.get('/user/:user_id/:page', middleware.posts_get, (req, res) =>
+router.get('/:username/:page', middleware.user_posts_get, (req, res) =>
   controller
-    .get_user_posts(req.user.id, req.params.user_id, req.params.page)
+    .get_posts_by_username(req.user.id, req.params.username, req.params.page)
     .then(response => res.status(response.status).json(response))
     .catch(response => res.status(response.status).json(response))
 )

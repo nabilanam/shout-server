@@ -268,14 +268,14 @@ describe('GET /api/feed/all/:page', () => {
       .catch(error => expect(error).toBeUndefined()))
 })
 
-describe('GET /api/feed/user/:user_id/:page', () => {
+describe('GET /api/feed/:username/:page', () => {
   beforeAll(() => new Post({ user: user.id, text: 'lorem ipsum' }).save())
 
   afterAll(() => Post.deleteMany({}))
 
   test('should return {status: 401, error: \'Authorization required\'} when no x-auth-token', () =>
     request(app)
-      .get('/api/feed/user/' + user.id + '/1')
+      .get('/api/feed/' + user.username + '/1')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(401)
@@ -288,7 +288,7 @@ describe('GET /api/feed/user/:user_id/:page', () => {
 
   test('should return {status: 400, error: \'invalid page number\'} when /:page is 0', () =>
     request(app)
-      .get('/api/feed/user/' + user.id + '/0')
+      .get('/api/feed/' + user.username + '/0')
       .set('Accept', 'application/json')
       .set('x-auth-token', token)
       .expect('Content-Type', /json/)
@@ -302,7 +302,7 @@ describe('GET /api/feed/user/:user_id/:page', () => {
 
   test('should return {status: 400, error: \'invalid page number\'} when invalid /:page', () =>
     request(app)
-      .get('/api/feed/user/' + user.id + '/1a')
+      .get('/api/feed/' + user.username + '/1a')
       .set('Accept', 'application/json')
       .set('x-auth-token', token)
       .expect('Content-Type', /json/)
@@ -314,23 +314,9 @@ describe('GET /api/feed/user/:user_id/:page', () => {
       })
       .catch(error => expect(error).toBeUndefined()))
 
-  test('should return {status: 500, error: \'Internal server error\'} when invalid /:user_id', () =>
-    request(app)
-      .get('/api/feed/user/123/1')
-      .set('Accept', 'application/json')
-      .set('x-auth-token', token)
-      .expect('Content-Type', /json/)
-      .expect(500)
-      .then(res => {
-        const { status, error } = res.body
-        expect(status).toBe(500)
-        expect(error).toBe('Internal server error')
-      })
-      .catch(error => expect(error).toBeUndefined()))
-
   test('should return {status: 200, data: [post]} when /:page', () =>
     request(app)
-      .get('/api/feed/user/' + user.id + '/1')
+      .get('/api/feed/' + user.username + '/1')
       .set('Accept', 'application/json')
       .set('x-auth-token', token)
       .expect('Content-Type', /json/)

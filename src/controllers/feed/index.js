@@ -91,10 +91,12 @@ const remove_post = async (user_id, post_id) => {
 
 const queryPostslike = async (user_id, posts) => {
   for (let post of posts) {
-    post._doc.isLiked = !!(await Like.findOne({
+    const isLiked = await Like.findOne({
       user: user_id,
       post: post.id
-    }))
+    })
+    if (post._doc) post._doc.isLiked = !!isLiked
+    else post.isLiked = !!isLiked
   }
   return posts
 }
@@ -114,15 +116,31 @@ const get_posts = (user_id, page) => {
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
-const get_user_posts = async (current_user_id, user_id, page) => {
-  if (!user_id || !page || page < 0)
+const get_posts_by_username = async (current_user_id, username, page) => {
+  if (!username || !page || page < 0)
     return Promise.reject(response.bad_request())
 
-  return Post.find({ user: user_id })
+  return Post.aggregate()
+    .lookup({
+      from: 'users',
+      localField: 'user',
+      foreignField: '_id',
+      as: 'user'
+    })
+    .unwind('user')
+    .match({ 'user.username': username })
     .sort({ created_at: -1 })
     .skip(feed_limit * (page - 1))
     .limit(feed_limit)
-    .populate(pop_user)
+    .project({
+      'user.is_authenticated': 0,
+      'user.password': 0,
+      'user.email': 0,
+      'user.auth_key': 0,
+      'user.created_at': 0,
+      'user.updated_at': 0,
+      'user.__v': 0
+    })
     .then(async posts => {
       posts = await queryPostslike(current_user_id, posts)
       return response.ok(posts)
@@ -238,7 +256,7 @@ module.exports = {
   add_post,
   update_post,
   get_posts,
-  get_user_posts,
+  get_posts_by_username,
   get_post,
   remove_post,
   like,

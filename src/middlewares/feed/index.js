@@ -79,6 +79,21 @@ const posts_get = [
   (req, res, next) => check_validation_result(req, res, next)
 ]
 
+const user_posts_get = [
+  verify,
+  param('username')
+    .exists()
+    .isString()
+    .withMessage('invalid username'),
+  param('page')
+    .exists()
+    .isNumeric()
+    .withMessage('invalid page number')
+    .custom(page => page > 0)
+    .withMessage('invalid page number'),
+  (req, res, next) => check_validation_result(req, res, next)
+]
+
 const post_remove = [
   verify,
   param('post_id')
@@ -178,6 +193,7 @@ module.exports = {
   post_update,
   post_get,
   posts_get,
+  user_posts_get,
   post_remove,
   like,
   likes_get,

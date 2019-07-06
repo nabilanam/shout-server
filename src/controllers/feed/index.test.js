@@ -199,7 +199,7 @@ describe('feed controller -> get_posts', () => {
 })
 
 // get_user_posts
-describe('feed controller -> get_user_posts', () => {
+describe('feed controller -> get_posts_by_username', () => {
   let user
   beforeAll(async done => {
     user = await new User({
@@ -216,9 +216,15 @@ describe('feed controller -> get_user_posts', () => {
     done()
   })
 
+  afterAll(async done => {
+    await User.deleteMany({})
+    await Post.deleteMany({})
+    done()
+  })
+
   test('should resolve Response with (200, feed) when (user_id, user_id, page = 1)', () =>
     controller
-      .get_user_posts(user.id, user.id, 1)
+      .get_posts_by_username(user.id, user.username, 1)
       .then(response => {
         expect(response.status).toBe(200)
         expect(response.data).toBeInstanceOf(Array)
@@ -228,7 +234,7 @@ describe('feed controller -> get_user_posts', () => {
 
   test('should reject ErrorResponse with (400, \'Invalid request\') when (user_id, user_id, page = 0)', () =>
     controller
-      .get_user_posts(user.id, user.id, 0)
+      .get_posts_by_username(user.id, user.username, 0)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
@@ -237,7 +243,7 @@ describe('feed controller -> get_user_posts', () => {
 
   test('should reject ErrorResponse with (400, \'Invalid request\') when (user_id)', () =>
     controller
-      .get_user_posts(user.id)
+      .get_posts_by_username(user.username)
       .then(response => expect(response).toBeUndefined())
       .catch(response => {
         expect(response.status).toBe(400)
