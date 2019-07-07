@@ -93,7 +93,7 @@ const queryPostslike = async (user_id, posts) => {
   for (let post of posts) {
     const isLiked = await Like.findOne({
       user: user_id,
-      post: post.id
+      post: post._id
     })
     if (post._doc) post._doc.isLiked = !!isLiked
     else post.isLiked = !!isLiked
