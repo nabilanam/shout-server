@@ -74,7 +74,7 @@ const update = (
   }
   if (bio) user.bio = bio
   if (quote) user.quote = quote
-  if (social) user.social = social
+  if (social) user.social = JSON.parse(social)
 
   return user
     .save()
