@@ -197,7 +197,7 @@ const add_comment = async (user_id, post_id, text) => {
     { $inc: { comments: 1 } },
     { new: true }
   )
-    .then(post => response.ok({ comment, count: post.comments }))
+    .then(post => response.ok({ ...comment._doc, count: post.comments }))
     .catch(() => Promise.reject(response.not_found()))
 }
 
@@ -215,7 +215,7 @@ const update_comment = async (user_id, post_id, comment_id, text) => {
   await comment.save()
 
   return Post.findById(post_id)
-    .then(post => response.ok({ comment, count: post.comments }))
+    .then(post => response.ok({ ...comment._doc, count: post.comments }))
     .catch(() => Promise.reject(response.internal_server_error()))
 }
 
