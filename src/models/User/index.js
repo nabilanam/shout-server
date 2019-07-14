@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
-const md5 = require('md5')
+const uuidv4 = require('uuid/v4')
 
 const { created_at, updated_at } = require('../audit')
 const errors = require('../errors')
@@ -64,7 +64,7 @@ const schema = new Schema({
 })
 
 schema.pre('save', function(next) {
-  this.auth_key = md5(this.id)
+  this.auth_key = uuidv4()
   this.updated_at = Date.now()
   next()
 })
