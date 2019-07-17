@@ -1,11 +1,13 @@
 const nodemailer = require('nodemailer')
-const { host, port, username, password } = require('config').get('mail')
+const { host, port, username, password, isSecure } = require('config').get(
+  'mail'
+)
 
 const send_mail = (to, subject, text) => {
   const transporter = nodemailer.createTransport({
     host: host,
     port: port,
-    secure: false,
+    secure: isSecure,
     auth: {
       user: username,
       pass: password

@@ -28,6 +28,7 @@
   "mail": {
     "host": "smtp.ethereal.email",
     "port": 587,
+    "isSecure": false,
     "username": "cullen.koelpin@ethereal.email",
     "password": "kMQHsRFpDy6ZCKKtZp"
   }
